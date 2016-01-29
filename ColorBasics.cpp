@@ -90,18 +90,19 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow)
     // Show window
     ShowWindow(hWndApp, nCmdShow);
 
-    const int eventCount = 1;
+    const int eventCount = 2;
     HANDLE hEvents[eventCount];
 
     // Main message loop
     while (WM_QUIT != msg.message)
     {
         hEvents[0] = m_hNextColorFrameEvent;
+		hEvents[1] = m_hNextSkeletonEvent;
 
         // Check to see if we have either a message (by passing in QS_ALLINPUT)
         // Or a Kinect event (hEvents)
         // Update() will check for Kinect events individually, in case more than one are signalled
-		//more info on function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms684242%28v=vs.85%29.aspx
+		//more info on MsgWaitForMultipleObjects function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms684242%28v=vs.85%29.aspx
         MsgWaitForMultipleObjects(eventCount, hEvents, FALSE, INFINITE, QS_ALLINPUT);
 
         // Explicitly check the Kinect frame event since MsgWaitForMultipleObjects
