@@ -14,8 +14,15 @@ void av_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 
 
 
+colourFrame *init_cFrame(size_t size){
+	colourFrame *cFrame;
+	GF_SAFEALLOC(cFrame, colourFrame);
+	cFrame->size = size;
+	cFrame->kinectFrame = (unsigned char*) gf_malloc(size);
+	return cFrame;
+}
 
-DASHout *init_encoder(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate){
+DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate){
 	
 
 #ifdef _DEBUG
@@ -97,18 +104,27 @@ DASHout *init_encoder(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 		printf("OK \n");
 	}
 
-	dasher->sws_ctx = sws_getContext(width, height, AV_PIX_FMT_RGB24, width, height, AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
+	if (INPUT_IS_RGB) {
+		/*dasher->rgb_yuv_ctx = sws_getContext(width, height, AV_PIX_FMT_RGB24,
+			width, height, AV_PIX_FMT_YUV420P,
+			0, 0, 0, 0);*/
+		dasher->sws_ctx = sws_getContext(width, height, AV_PIX_FMT_RGB24, width, height, AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
+		dasher->yuv_buffer = (u8 *)av_malloc(width*height * 3 / 2);
 
-	if(!dasher->sws_ctx){
-		printf("ERROR Cannot create sws context for RGB to YUV conversion \n");
-		return NULL;
+
+		if(!dasher->sws_ctx){
+			printf("ERROR Cannot create sws context for RGB to YUV conversion \n");
+			return NULL;
+		}	
 	}
-	
 
+
+	
+	dasher->sys_start = gf_sys_clock_high_res();
 	return dasher;
 }
 
-int encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
+int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	AVPacket pkt;
 	int got_packet;
 
@@ -137,7 +153,7 @@ int encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 		outData[1] = dasher->yuv_buffer + dasher->codec_ctx->width*dasher->codec_ctx->height;
 		outData[2] = dasher->yuv_buffer + 5 * dasher->codec_ctx->width*dasher->codec_ctx->height / 4;
 
-		sws_scale(dasher->sws_ctx, inData, inLinesize, 0, dasher->codec_ctx->height, outData, outLinesize);
+		int hei = sws_scale(dasher->sws_ctx, inData, inLinesize, 0, dasher->codec_ctx->height, outData, outLinesize);
 		frame = dasher->yuv_buffer;
 	}
 
@@ -198,4 +214,8 @@ void destroy_encoder(DASHout *dasher){
 	av_free(dasher->avframe);
 	gf_isom_sample_del(&dasher->sample);
 	gf_free(dasher);
+}
+
+void destroy_cFrame(colourFrame *cFrame){
+	gf_free(cFrame);
 }

@@ -44,14 +44,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	
 	gf_sys_init(GF_FALSE);
 
-	dasher = init_encoder(seg_dur_in_ms, frame_per_segment, frame_duration, timescale, gop_size, width, height, bitrate);
+	dasher = encoder_init(seg_dur_in_ms, frame_per_segment, frame_duration, timescale, gop_size, width, height, bitrate);
 
 	if(!dasher){
 		return 1;
 	}	
 
+	application.setDasher(dasher);
 
-    application.Run(hInstance, nCmdShow);
+    application.Run(hInstance, nCmdShow, dasher);
 	/*
 KinectSensor sensor;
 

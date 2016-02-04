@@ -43,12 +43,22 @@ extern "C" {
 #define BPS 500000
 */
 
+#define INPUT_IS_RGB 1
+
+
+typedef struct{
+	unsigned char *kinectFrame;	//in RGB
+	u64 number;	//provided by sdk
+	size_t size;	//w*h*3
+	u64 pts;	//now-start
+}colourFrame;
 
 typedef struct{
 	/*FFMPEG specifics*/
 	AVCodecContext *codec_ctx;
 	AVCodec *codec;
 	AVFrame *avframe;
+	AVPacket *avpacket_out;
 	struct SwsContext *sws_ctx;
 
 	/* picture buffer */
@@ -63,6 +73,12 @@ typedef struct{
 	uint8_t *vbuf;
 	int vbuf_size;
 	int encoded_frame_size;
+
+	/*kinect frames*/
+	colourFrame *nextColourFrame;
+	//skelFrame *nextSkelFrame;
+
+	u64 sys_start;
 
 	int seg_dur;
 
@@ -84,5 +100,10 @@ typedef struct{
 }DASHout;
 
 
+DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate);
 
-DASHout *init_encoder(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate);
+int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
+
+colourFrame *init_cFrame(size_t size);
+
+void destroy_cFrame(colourFrame *cFrame);

@@ -54,12 +54,16 @@ CColorBasics::~CColorBasics()
     SafeRelease(m_pNuiSensor);
 }
 
+void CColorBasics::setDasher(DASHout *dash){
+	dasher = dash;
+}
+
 /// <summary>
 /// Creates the main window and begins processing
 /// </summary>
 /// <param name="hInstance">handle to the application instance</param>
 /// <param name="nCmdShow">whether to display minimized, maximized, or normally</param>
-int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow)
+int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 {
     MSG       msg = {0};
     WNDCLASS  wc;
@@ -107,7 +111,7 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow)
 
         // Explicitly check the Kinect frame event since MsgWaitForMultipleObjects
         // can return for other reasons even though it is signaled.
-        Update();
+        Update(dasher);
 
         while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -128,17 +132,23 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow)
 /// <summary>
 /// Main processing function
 /// </summary>
-void CColorBasics::Update()
+void CColorBasics::Update(DASHout* dasher)
 {
     if (NULL == m_pNuiSensor)
     {
         return;
     }
 
-    if ( WAIT_OBJECT_0 == WaitForSingleObject(m_hNextColorFrameEvent, 0) )
+    if ( WAIT_OBJECT_0 == WaitForSingleObject(m_hNextColorFrameEvent, INFINITE) )
     {
-        ProcessColor();
+        ProcessColor(dasher);
     }
+
+
+	if(dasher->nextColourFrame){
+		int res = encoder_encode(dasher, (u8 *) dasher->nextColourFrame->kinectFrame, dasher->nextColourFrame->size,dasher->nextColourFrame->pts);
+	}
+
 }
 
 /// <summary>
@@ -331,15 +341,17 @@ HRESULT GetScreenshotFileName(wchar_t *screenshotName, UINT screenshotNameSize)
 /// Handle new color data
 /// </summary>
 /// <returns>indicates success or failure</returns>
-void CColorBasics::ProcessColor()
+void CColorBasics::ProcessColor(DASHout* dasher)
 {
     HRESULT hr;
     NUI_IMAGE_FRAME imageFrame;
+	colourFrame *cFrame;
 
     // Attempt to get the color frame
     hr = m_pNuiSensor->NuiImageStreamGetNextFrame(m_pColorStreamHandle, 0, &imageFrame);
     if (FAILED(hr))
     {
+		printf("failed in processcolor \n ");
         return;
     }
 
@@ -352,6 +364,34 @@ void CColorBasics::ProcessColor()
     // Make sure we've received valid data
     if (LockedRect.Pitch != 0)
     {
+
+		//init the frame to be parsed in FFMPEG
+		cFrame = init_cFrame(cColorWidth*cColorHeight*3);
+		if(!cFrame){
+			printf("fudge!\n");
+			gf_free(cFrame);
+			return;
+		}
+
+		//Frame number
+		cFrame->number = imageFrame.dwFrameNumber;
+		cFrame->pts = gf_sys_clock_high_res() - dasher->sys_start;
+
+		//convert RGBA to RGB
+		unsigned char * currFrame = (unsigned char *)LockedRect.pBits;
+
+		int j = 0;
+		for (int i = 0; i < cColorWidth * cColorHeight * 4; i += 4){
+			(cFrame->kinectFrame)[i - j] = currFrame[i + 2];
+			(cFrame->kinectFrame)[i - j + 1] = currFrame[i + 1];
+			(cFrame->kinectFrame)[i - j + 2] = currFrame[i];
+			j++;
+		}
+
+		dasher->nextColourFrame = cFrame;
+
+
+
         // Draw the data with Direct2D
         m_pDrawColor->Draw(static_cast<BYTE *>(LockedRect.pBits), LockedRect.size);
 

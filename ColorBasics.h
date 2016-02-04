@@ -54,7 +54,9 @@ public:
     /// </summary>
     /// <param name="hInstance"></param>
     /// <param name="nCmdShow"></param>
-    int                     Run(HINSTANCE hInstance, int nCmdShow);
+	int                     Run(HINSTANCE hInstance, int nCmdShow, DASHout *dasher);
+
+	void					setDasher(DASHout* dash);
 
 private:
     HWND                    m_hWnd;
@@ -76,11 +78,13 @@ private:
 	HANDLE                  m_pSkeletonStreamHandle;
     HANDLE                  m_hNextSkeletonEvent;
 
+	// Ref to encoder
+	DASHout* dasher;
 
     /// <summary>
     /// Main processing function
     /// </summary>
-    void                    Update();
+    void                    Update(DASHout* dasher);
 
     /// <summary>
     /// Create the first connected Kinect found 
@@ -91,12 +95,12 @@ private:
     /// <summary>
     /// Handle new color data
     /// </summary>
-    void                    ProcessColor();
+    void                    ProcessColor(DASHout* dasher);
 
     /// <summary>
     /// Handle new skeleton data
     /// </summary>
-    void                    ProcessSkeleton();
+    void                    ProcessSkeleton(DASHout* dasher);
 
     /// <summary>
     /// Set the status bar message
