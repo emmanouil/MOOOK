@@ -9,6 +9,9 @@
 #include "ColorBasics.h"
 #include "resource.h"
 
+#ifdef _DEBUG
+#include <direct.h>
+#endif
 /// <summary>
 /// Constructor
 /// </summary>
@@ -96,6 +99,11 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 
     const int eventCount = 2;
     HANDLE hEvents[eventCount];
+
+#ifdef _DEBUG
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)) != NULL) fprintf(stdout, "Current working dir: %s\n", cwd);
+#endif
 
     // Main message loop
     while (WM_QUIT != msg.message)
