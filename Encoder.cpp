@@ -40,7 +40,10 @@ DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 	dasher->gop_size = gop_size;
 	dasher->frame_dur = frame_dur;
 
+	dasher->avpacket_out.size = 0;
+
 	dasher->avframe = av_frame_alloc();
+	av_init_packet(&dasher->avpacket_out);
 
 	//alloc a FFMPEG buffer to store encoded data
 	dasher->vbuf_size = 9 * width * height + 10000;
@@ -69,7 +72,7 @@ DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 	dasher->codec_ctx->height = height;
 
 	//dasher->codec->pix_fmts = &dasher->codec_ctx->pix_fmt;
-	/*
+
 	dasher->codec_ctx->codec_id = dasher->codec->id;
 	dasher->codec_ctx->codec_type = AVMEDIA_TYPE_VIDEO;
 	dasher->codec_ctx->bit_rate = bitrate;
@@ -88,7 +91,6 @@ DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 
 	//the global header gives access to the extradata (SPS/PPS) in ffmpeg extra data
 	dasher->codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-	*/
 
 	/* open the video codec - options are passed thru dasher->codec_ctx->priv_data */
 	int pop = avcodec_open2(dasher->codec_ctx, dasher->codec, NULL) ;
@@ -163,7 +165,7 @@ int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	dasher->avframe->linesize[2] = dasher->codec_ctx->width / 2;
 
 	// frame intervient ici
-//	dasher->avframe->format = PIX_FMT_YUV420P;
+	dasher->avframe->format = AV_PIX_FMT_YUV420P;
 	dasher->avframe->data[0] = frame;
 	dasher->avframe->data[1] = frame + dasher->codec_ctx->width * dasher->codec_ctx->height;
 	dasher->avframe->data[2] = frame + 5 * dasher->codec_ctx->width * dasher->codec_ctx->height / 4;
@@ -182,7 +184,7 @@ int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	// Param 4 : [out] 1 if output packet non-empty and 0 if empty
 
 	//Return 0 on success, negative error code on failure
-	dasher->encoded_frame_size = avcodec_encode_video2(dasher->codec_ctx, &pkt, dasher->avframe, &got_packet);
+	dasher->encoded_frame_size = avcodec_encode_video2(dasher->codec_ctx, &dasher->avpacket_out, dasher->avframe, &got_packet);
 
 
 	if (dasher->encoded_frame_size >= 0)
