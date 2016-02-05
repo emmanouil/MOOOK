@@ -225,3 +225,229 @@ void destroy_muxer(DASHout *dasher){
 void destroy_cFrame(colourFrame *cFrame){
 	gf_free(cFrame);
 }
+
+/**
+* A function which takes FFmpeg H264 extradata (SPS/PPS) and bring them ready to be pushed to the MP4 muxer.
+* @param extradata
+* @param extradata_size
+* @param dstcfg
+* @returns GF_OK is the extradata was parsed and is valid, other values otherwise.
+*/
+static GF_Err import_avc_extradata(const u8 *extradata, const u64 extradata_size, GF_AVCConfig *dstcfg)
+{
+	u8 nal_size;
+	AVCState avc;
+	GF_BitStream *bs;
+	if (!extradata || (extradata_size < sizeof(u32)))
+		return GF_BAD_PARAM;
+	bs = gf_bs_new((const char *)extradata, extradata_size, GF_BITSTREAM_READ);
+	if (!bs)
+		return GF_BAD_PARAM;
+	if (gf_bs_read_u32(bs) != 0x00000001) {
+		gf_bs_del(bs);
+		return GF_BAD_PARAM;
+	}
+
+	//SPS
+	{
+		s32 idx;
+		char *buffer = NULL;
+		const u64 nal_start = 4;
+		nal_size = gf_media_nalu_next_start_code_bs(bs);
+		if (nal_start + nal_size > extradata_size) {
+			gf_bs_del(bs);
+			return GF_BAD_PARAM;
+		}
+		buffer = (char*)gf_malloc(nal_size);
+		gf_bs_read_data(bs, buffer, nal_size);
+		gf_bs_seek(bs, nal_start);
+		if ((gf_bs_read_u8(bs) & 0x1F) != GF_AVC_NALU_SEQ_PARAM) {
+			gf_bs_del(bs);
+			gf_free(buffer);
+			return GF_BAD_PARAM;
+		}
+
+		idx = gf_media_avc_read_sps(buffer, nal_size, &avc, 0, NULL);
+		if (idx < 0) {
+			gf_bs_del(bs);
+			gf_free(buffer);
+			return GF_BAD_PARAM;
+		}
+
+		dstcfg->configurationVersion = 1;
+		dstcfg->profile_compatibility = avc.sps[idx].prof_compat;
+		dstcfg->AVCProfileIndication = avc.sps[idx].profile_idc;
+		dstcfg->AVCLevelIndication = avc.sps[idx].level_idc;
+		dstcfg->chroma_format = avc.sps[idx].chroma_format;
+		dstcfg->luma_bit_depth = 8 + avc.sps[idx].luma_bit_depth_m8;
+		dstcfg->chroma_bit_depth = 8 + avc.sps[idx].chroma_bit_depth_m8;
+
+		{
+			GF_AVCConfigSlot *slc = (GF_AVCConfigSlot*)gf_malloc(sizeof(GF_AVCConfigSlot));
+			slc->size = nal_size;
+			slc->id = idx;
+			slc->data = buffer;
+			gf_list_add(dstcfg->sequenceParameterSets, slc);
+		}
+	}
+
+	//PPS
+	{
+		s32 idx;
+		char *buffer = NULL;
+		const u64 nal_start = 4 + nal_size + 4;
+		gf_bs_seek(bs, nal_start);
+		nal_size = gf_media_nalu_next_start_code_bs(bs);
+		if (nal_start + nal_size > extradata_size) {
+			gf_bs_del(bs);
+			return GF_BAD_PARAM;
+		}
+		buffer = (char*)gf_malloc(nal_size);
+		gf_bs_read_data(bs, buffer, nal_size);
+		gf_bs_seek(bs, nal_start);
+		if ((gf_bs_read_u8(bs) & 0x1F) != GF_AVC_NALU_PIC_PARAM) {
+			gf_bs_del(bs);
+			gf_free(buffer);
+			return GF_BAD_PARAM;
+		}
+
+		idx = gf_media_avc_read_pps(buffer, nal_size, &avc);
+		if (idx < 0) {
+			gf_bs_del(bs);
+			gf_free(buffer);
+			return GF_BAD_PARAM;
+		}
+
+		{
+			GF_AVCConfigSlot *slc = (GF_AVCConfigSlot*)gf_malloc(sizeof(GF_AVCConfigSlot));
+			slc->size = nal_size;
+			slc->id = idx;
+			slc->data = buffer;
+			gf_list_add(dstcfg->pictureParameterSets, slc);
+		}
+	}
+
+	gf_bs_del(bs);
+	return GF_OK;
+}
+
+
+static GF_Err muxer_write_config(DASHout *dasher, u32 *di, u32 track)
+{
+	GF_Err ret;
+	if (dasher->codec_ctx->codec_id == CODEC_ID_H264) {
+		GF_AVCConfig *avccfg;
+		avccfg = gf_odf_avc_cfg_new();
+		if (!avccfg) {
+			GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("Cannot create AVCConfig\n"));
+			return GF_OUT_OF_MEM;
+		}
+
+		ret = import_avc_extradata(dasher->codec_ctx->extradata, dasher->codec_ctx->extradata_size, avccfg);
+		if (ret != GF_OK) {
+			GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("Cannot parse AVC/H264 SPS/PPS\n"));
+			gf_odf_avc_cfg_del(avccfg);
+			return ret;
+		}
+
+		ret = gf_isom_avc_config_new(dasher->isof, track, avccfg, NULL, NULL, di);
+		if (ret != GF_OK) {
+			GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_avc_config_new\n", gf_error_to_string(ret)));
+			return ret;
+		}
+
+		gf_odf_avc_cfg_del(avccfg);
+
+	}
+	return GF_OK;
+}
+
+
+int muxer_create_init_segment(DASHout *dasher, char *filename)
+{
+	GF_Err ret;
+	AVCodecContext *video_codec_ctx = dasher->codec_ctx;
+	u32 di, track;
+
+	//TODO: For the moment it is fixed
+	//u32 sample_dur = dasher->codec_ctx->time_base.den;
+
+	//int64_t profile = 0;
+	//av_opt_get_int(dasher->codec_ctx->priv_data, "level", AV_OPT_SEARCH_CHILDREN, &profile);
+
+	dasher->isof = gf_isom_open(filename, GF_ISOM_OPEN_WRITE, NULL);
+	if (!dasher->isof) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("Cannot open iso file %s\n", filename));
+		return -1;
+	}
+	//gf_isom_store_movie_config(dasher->isof, 0);
+	track = gf_isom_new_track(dasher->isof, 0, GF_ISOM_MEDIA_VISUAL, video_codec_ctx->time_base.den);
+	dasher->trackID = gf_isom_get_track_id(dasher->isof, track);
+
+	dasher->timescale = video_codec_ctx->time_base.den;
+	if (!dasher->frame_duration)
+		dasher->frame_duration = video_codec_ctx->time_base.num;
+
+	if (!track) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("Cannot create new track\n"));
+		return -1;
+	}
+
+	ret = gf_isom_set_track_enabled(dasher->isof, track, 1);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_set_track_enabled\n", gf_error_to_string(ret)));
+		return -1;
+	}
+
+	ret = muxer_write_config(dasher, &di, track);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: muxer_write_config\n", gf_error_to_string(ret)));
+		return -1;
+	}
+
+	gf_isom_set_visual_info(dasher->isof, track, di, video_codec_ctx->width, video_codec_ctx->height);
+	gf_isom_set_sync_table(dasher->isof, track);
+
+	ret = gf_isom_setup_track_fragment(dasher->isof, track, 1, (u32)dasher->frame_duration, 0, 0, 0, 0);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_setup_track_fragment\n", gf_error_to_string(ret)));
+		return -1;
+	}
+
+	ret = gf_isom_finalize_for_fragment(dasher->isof, track);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_finalize_for_fragment\n", gf_error_to_string(ret)));
+		return -1;
+	}
+
+	ret = gf_media_get_rfc_6381_codec_name(dasher->isof, track, dasher->codec6381, GF_FALSE, GF_FALSE);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_finalize_for_fragment\n", gf_error_to_string(ret)));
+		return -1;
+	}
+	fprintf(stderr, "Codec params : %s\n", dasher->codec6381);
+
+	return 0;
+}
+
+
+GF_Err muxer_open_segment(DASHout *dasher, char *dir, char *id_name, int seg){
+	GF_Err ret = -1;
+	char name[GF_MAX_PATH];
+
+	if (seg == 1) {
+		snprintf(name, sizeof(name), "%s/%s_init_gpac.mp4", directory, id_name);
+		muxer_create_init_segment(dasher, name);
+		dasher->first_dts_in_fragment = 0;
+	}
+	snprintf(name, sizeof(name), "%s/%s_%d_gpac.m4s", directory, id_name, seg);
+
+	ret = gf_isom_start_segment(dasher->isof, name, (Bool)1);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_start_segment\n", gf_error_to_string(ret)));
+		return ret;
+	}
+	GF_LOG(GF_LOG_INFO, GF_LOG_DASH, ("[DashCast] Opening new segment %s at UTC "LLU" ms\n", name, gf_net_get_utc()));
+	return GF_OK;
+
+}

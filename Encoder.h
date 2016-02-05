@@ -128,3 +128,15 @@ int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
 colourFrame *init_cFrame(size_t size);
 
 void destroy_cFrame(colourFrame *cFrame);
+
+
+
+static GF_Err import_avc_extradata(const u8 *extradata, const u64 extradata_size, GF_AVCConfig *dstcfg);
+
+static GF_Err muxer_write_config(DASHout *dasher, u32 *di, u32 track);
+
+/* Create initial segment */
+int muxer_create_init_segment(DASHout *dasher, char *filename);
+
+/* Open new segment */
+GF_Err muxer_open_segment(DASHout *dasher, char *directory, char *id_name, int seg);
