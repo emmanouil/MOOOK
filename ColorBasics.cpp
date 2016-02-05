@@ -76,18 +76,18 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
     wc.style         = CS_HREDRAW | CS_VREDRAW;
     wc.cbWndExtra    = DLGWINDOWEXTRA;
     wc.hInstance     = hInstance;
-    wc.hCursor       = LoadCursorW(NULL, IDC_ARROW);
-    wc.hIcon         = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_APP));
+    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon         = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APP));
     wc.lpfnWndProc   = DefDlgProcW;
-    wc.lpszClassName = L"ColorBasicsAppDlgWndClass";
+    wc.lpszClassName = "ColorBasicsAppDlgWndClass";
 
-    if (!RegisterClassW(&wc))
+    if (!RegisterClass(&wc))
     {
         return 0;
     }
 
     // Create main application window
-    HWND hWndApp = CreateDialogParamW(
+    HWND hWndApp = CreateDialogParam(
         hInstance,
         MAKEINTRESOURCE(IDD_APP),
         NULL,
@@ -404,7 +404,8 @@ void CColorBasics::ProcessColor(DASHout* dasher)
         // Draw the data with Direct2D
         m_pDrawColor->Draw(static_cast<BYTE *>(LockedRect.pBits), LockedRect.size);
 
-        // If the user pressed the screenshot button, save a screenshot
+#if 0
+		// If the user pressed the screenshot button, save a screenshot
         if (m_bSaveScreenshot)
         {
             WCHAR statusMessage[cStatusMessageMaxLen];
@@ -431,7 +432,8 @@ void CColorBasics::ProcessColor(DASHout* dasher)
             // toggle off so we don't save a screenshot again next frame
             m_bSaveScreenshot = false;
         }
-    }
+#endif
+	}
 
     // We're done with the texture so unlock it
     pTexture->UnlockRect(0);
@@ -449,6 +451,7 @@ void CColorBasics::SetStatusMessage(WCHAR * szMessage)
     SendDlgItemMessageW(m_hWnd, IDC_STATUS, WM_SETTEXT, 0, (LPARAM)szMessage);
 }
 
+#if 0
 /// <summary>
 /// Save passed in image data to disk as a bitmap
 /// </summary>
@@ -514,3 +517,4 @@ HRESULT CColorBasics::SaveBitmapToFile(BYTE* pBitmapBits, LONG lWidth, LONG lHei
     CloseHandle(hFile);
     return S_OK;
 }
+#endif
