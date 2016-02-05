@@ -8,6 +8,34 @@
 #include "Tools.h"
 #include "Encoder.h"
 
+
+
+//TODO add set/get and destructor
+loook_opt* loook_init(void){
+
+	loook_opt *opt;
+	GF_SAFEALLOC(opt, loook_opt);
+
+	opt->width = 640;
+	opt->height = 480;
+	opt->frame_per_segment = 30;
+	opt->frame_duration = 1;
+	opt->segment_duration = 30;
+	opt->gop_size = 30;
+	opt->bitrate = 500000;
+	opt->seg_dur_in_ms = 1000;
+	opt->timescale = 1000000;
+	opt->seg_num = 1;
+	opt->data_size = opt->width * opt->height * 3;
+
+	opt->now = 0;
+	opt->timeref = 0;
+	opt->timeScreenshot = 0;
+
+	return opt;
+}
+
+
 /// <summary>
 /// Entry point for the application
 /// </summary>
@@ -22,29 +50,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
 	//params:
 	DASHout *dasher;
-	u32 width = 640;
-	u32 height = 480;
-	u32 frame_per_segment = 30;
-	u32 frame_duration = 1;
-	int segment_duration = 30;
-	u32 gop_size = 30;
-	u32 bitrate = 500000;
-	u32 seg_dur_in_ms = 1000;
-	u32 timescale = 1000000;
-	int seg_num = 1;
-	u32 data_size = width * height * 3;
-
-	u64 now = 0;
-	u64 timeref = 0;
-	u64 timeScreenshot = 0;
+	loook_opt *options;
 	
 #ifdef _DEBUG
 	RedirectIOToConsole();
 #endif
 	
+	options = loook_init();
+	
 	gf_sys_init(GF_FALSE);
 
-	dasher = encoder_init(seg_dur_in_ms, frame_per_segment, frame_duration, timescale, gop_size, width, height, bitrate);
+	dasher = encoder_init(options);
 
 	if(!dasher){
 		return 1;

@@ -22,7 +22,7 @@ colourFrame *init_cFrame(size_t size){
 	return cFrame;
 }
 
-DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate){
+DASHout *encoder_init(loook_opt *o){
 	
 
 #ifdef _DEBUG
@@ -30,15 +30,19 @@ DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 	av_log_set_level(AV_LOG_VERBOSE);
 #endif
 
+	int width, height;
 	DASHout *dasher;
 	GF_SAFEALLOC(dasher, DASHout);
 
+	dasher->o = o;
 	dasher->sample = gf_isom_sample_new();
 	dasher->isof = NULL;
+	width = o->width;
+	height = o->height;
 
-	dasher->seg_dur = seg_dur_in_ms;
-	dasher->gop_size = gop_size;
-	dasher->frame_dur = frame_dur;
+	dasher->seg_dur = o->seg_dur_in_ms;
+	dasher->gop_size = o->gop_size;
+	dasher->frame_duration = o->frame_duration;
 
 	dasher->avpacket_out.size = 0;
 
@@ -75,10 +79,10 @@ DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u
 
 	dasher->codec_ctx->codec_id = dasher->codec->id;
 	dasher->codec_ctx->codec_type = AVMEDIA_TYPE_VIDEO;
-	dasher->codec_ctx->bit_rate = bitrate;
+	dasher->codec_ctx->bit_rate = o->bitrate;
 	dasher->codec_ctx->sample_aspect_ratio.num = dasher->codec_ctx->sample_aspect_ratio.den = 1;
 	dasher->codec_ctx->time_base.num = 1;
-	dasher->codec_ctx->time_base.den = (seg_dur_in_ms/1000)*frame_per_segment;
+	dasher->codec_ctx->time_base.den = (o->seg_dur_in_ms/1000)*o->frame_per_segment;
 
 	//dasher->codec_ctx->pix_fmt = AV_PIX_FMT_RGB24;
 	dasher->codec_ctx->gop_size = 30;

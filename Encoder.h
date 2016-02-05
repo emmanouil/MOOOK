@@ -31,6 +31,7 @@ extern "C" {
 #include <gpac/tools.h>
 }
 
+
 /*
 //VIDEOS
 #define WIDTH 640
@@ -45,6 +46,23 @@ extern "C" {
 
 #define INPUT_IS_RGB 1
 
+typedef struct{
+	u32 width;
+	u32 height;
+	u32 frame_per_segment;
+	u32 frame_duration;
+	int segment_duration;
+	u32 gop_size;
+	u32 bitrate;
+	u32 seg_dur_in_ms;
+	u32 timescale;
+	int seg_num;
+	u32 data_size;
+
+	u64 now;
+	u64 timeref;
+	u64 timeScreenshot;
+}loook_opt;
 
 typedef struct{
 	unsigned char *kinectFrame;	//in RGB
@@ -69,6 +87,9 @@ typedef struct{
 	GF_ISOSample *sample;
 	u32 trackID;
 
+	/* LOOOK params */
+	loook_opt *o;
+
 	/* encoding parameters */
 	uint8_t *vbuf;
 	int vbuf_size;
@@ -88,7 +109,7 @@ typedef struct{
 
 	u64 pts_at_segment_start, pts_at_first_segment;
 	u64 last_pts, last_dts;
-	u64 frame_dur;
+	u64 frame_duration;
 	u32 timescale;
 	u32 nb_segments;
 
@@ -100,7 +121,7 @@ typedef struct{
 }DASHout;
 
 
-DASHout *encoder_init(u32 seg_dur_in_ms, u32 frame_per_segment, u32 frame_dur, u32 timescale, u32 gop_size, u32 width, u32 height, u32 bitrate);
+DASHout *encoder_init(loook_opt *options);
 
 int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
 
