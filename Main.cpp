@@ -60,7 +60,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	
 	gf_sys_init(GF_FALSE);
 
-	dasher = encoder_init(options);
+	dasher = muxer_init(options);
 
 	if(!dasher){
 		return 1;

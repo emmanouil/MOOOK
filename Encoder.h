@@ -121,9 +121,9 @@ typedef struct{
 }DASHout;
 
 
-DASHout *encoder_init(loook_opt *options);
+DASHout *muxer_init(loook_opt *options);
 
-int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
+int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
 
 colourFrame *init_cFrame(size_t size);
 

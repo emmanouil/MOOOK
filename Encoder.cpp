@@ -22,7 +22,7 @@ colourFrame *init_cFrame(size_t size){
 	return cFrame;
 }
 
-DASHout *encoder_init(loook_opt *o){
+DASHout *muxer_init(loook_opt *o){
 	
 
 #ifdef _DEBUG
@@ -130,7 +130,7 @@ DASHout *encoder_init(loook_opt *o){
 	return dasher;
 }
 
-int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
+int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	AVPacket pkt;
 	int got_packet;
 
@@ -213,7 +213,7 @@ int encoder_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	return -1;
 }
 
-void destroy_encoder(DASHout *dasher){
+void destroy_muxer(DASHout *dasher){
 	sws_freeContext(dasher->sws_ctx);
 	av_free(dasher->codec_ctx);
 	av_free(dasher->vbuf);

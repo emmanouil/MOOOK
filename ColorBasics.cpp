@@ -146,7 +146,8 @@ void CColorBasics::Update(DASHout* dasher)
 
 
 	if(dasher->nextColourFrame){
-		int res = encoder_encode(dasher, (u8 *) dasher->nextColourFrame->kinectFrame, dasher->nextColourFrame->size,dasher->nextColourFrame->pts);
+		int res = muxer_encode(dasher, (u8 *) dasher->nextColourFrame->kinectFrame, dasher->nextColourFrame->size,dasher->nextColourFrame->pts);
+
 	}
 
 }
