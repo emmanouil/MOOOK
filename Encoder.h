@@ -155,3 +155,11 @@ int muxer_create_init_segment(DASHout *dasher, char *filename);
 
 /* Open new segment */
 GF_Err muxer_open_segment(DASHout *dasher, char *directory, char *id_name, int seg);
+
+/* Close it */
+GF_Err muxer_close_segment(DASHout *dasher);
+
+/* Write frame in current segment */
+int muxer_write_frame(DASHout *dasher, u64 frame_nb);
+
+int muxer_write_video_frame(DASHout *dasher);

@@ -454,3 +454,121 @@ GF_Err muxer_open_segment(DASHout *dasher, char *dir, char *id_name, int seg){
 	return GF_OK;
 
 }
+int muxer_write_video_frame(DASHout *dasher)
+{
+	GF_Err ret;
+	AVCodecContext *video_codec_ctx = dasher->codec_ctx;
+
+	u32 sc_size = 0;
+	u32 nalu_size = 0;
+
+	u32 buf_len = dasher->encoded_frame_size;
+	u8 *buf_ptr = dasher->vbuf;
+
+	GF_BitStream *out_bs = gf_bs_new(NULL, 2 * buf_len, GF_BITSTREAM_WRITE);
+	nalu_size = gf_media_nalu_next_start_code(buf_ptr, buf_len, &sc_size);
+	if (nalu_size != 0) {
+		gf_bs_write_u32(out_bs, nalu_size);
+		gf_bs_write_data(out_bs, (const char*)buf_ptr, nalu_size);
+	}
+	if (sc_size) {
+		buf_ptr += (nalu_size + sc_size);
+		buf_len -= (nalu_size + sc_size);
+	}
+
+	while (buf_len) {
+		nalu_size = gf_media_nalu_next_start_code(buf_ptr, buf_len, &sc_size);
+		if (nalu_size != 0) {
+			gf_bs_write_u32(out_bs, nalu_size);
+			gf_bs_write_data(out_bs, (const char*)buf_ptr, nalu_size);
+		}
+
+		buf_ptr += nalu_size;
+
+		if (!sc_size || (buf_len < nalu_size + sc_size))
+			break;
+		buf_len -= nalu_size + sc_size;
+		buf_ptr += sc_size;
+	}
+
+	gf_bs_get_content(out_bs, &dasher->sample->data, &dasher->sample->dataLength);
+	//dasher->sample->data = //(char *) (dasher->vbuf + nalu_size + sc_size);
+	//dasher->sample->dataLength = //dasher->encoded_frame_size - (sc_size + nalu_size);
+
+	dasher->sample->DTS = video_codec_ctx->coded_frame->pkt_dts;
+	dasher->sample->CTS_Offset = (s32)(video_codec_ctx->coded_frame->pts - dasher->sample->DTS);
+	dasher->sample->IsRAP = video_codec_ctx->coded_frame->key_frame ? RAP : RAP_NO;
+
+	GF_LOG(GF_LOG_DEBUG, GF_LOG_DASH, ("Isom Write: RAP %d , DTS "LLD" CTS offset %d \n", dasher->sample->IsRAP, dasher->sample->DTS, dasher->sample->CTS_Offset));
+
+	ret = gf_isom_fragment_add_sample(dasher->isof, dasher->trackID, dasher->sample, 1, (u32)dasher->frame_duration, 0, 0, (Bool)0);
+	if (ret != GF_OK) {
+		gf_bs_del(out_bs);
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_fragment_add_sample\n", gf_error_to_string(ret)));
+		return -1;
+	}
+
+	//free data but keep sample structure alive
+	gf_free(dasher->sample->data);
+	dasher->sample->data = NULL;
+	dasher->sample->dataLength = 0;
+
+	gf_bs_del(out_bs);
+	return 0;
+}
+
+
+int muxer_write_frame(DASHout *dasher, u64 frame_nb)
+{
+	GF_Err ret;
+
+	if (!dasher->fragment_started) {
+		dasher->fragment_started = GF_TRUE;
+		ret = gf_isom_start_fragment(dasher->isof, (Bool)1);
+		if (ret < 0)
+			return -1;
+
+		dasher->first_dts_in_fragment = dasher->codec_ctx->coded_frame->pkt_dts;
+		if(dasher->avpacket_out.dts == dasher->codec_ctx->coded_frame->pkt_dts){
+			printf("%d %d\n",dasher->codec_ctx->coded_frame->pts,dasher->avpacket_out.pts);
+		}
+		if (!dasher->segment_started) {
+			dasher->pts_at_segment_start = dasher->codec_ctx->coded_frame->pts;
+			dasher->segment_started = GF_TRUE;
+			if (!dasher->nb_segments) {
+				dasher->pts_at_first_segment = dasher->pts_at_segment_start;
+			}
+		}
+		gf_isom_set_traf_base_media_decode_time(dasher->isof, dasher->trackID, dasher->first_dts_in_fragment);
+	}
+
+	if (muxer_write_video_frame(dasher) < 0) {
+		return -1;
+	}
+	dasher->last_pts = dasher->codec_ctx->coded_frame->pts;
+	dasher->last_dts = dasher->codec_ctx->coded_frame->pkt_dts;
+
+	//we may have rounding errors on the input PTS :( add half frame dur safety
+
+	//flush segments based on the cumultated duration , to avoid drift
+	if (1000 * (dasher->last_pts - dasher->pts_at_first_segment + 3 * dasher->frame_duration / 2) / dasher->timescale >= (dasher->nb_segments + 1)*dasher->seg_dur) {
+		return 1;
+	}
+	return 0;
+}
+
+GF_Err muxer_close_segment(DASHout *dasher)
+{
+	GF_Err ret;
+	dasher->fragment_started = dasher->segment_started = GF_FALSE;
+	dasher->nb_segments++;
+
+	ret = gf_isom_close_segment(dasher->isof, 0, 0, 0, 0, 0, GF_FALSE, GF_TRUE, 0, NULL, NULL);
+	if (ret != GF_OK) {
+		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_close_segment\n", gf_error_to_string(ret)));
+		return GF_BAD_PARAM;
+	}
+	GF_LOG(GF_LOG_INFO, GF_LOG_DASH, ("[DashCast] Rep %s Closing segment at UTC "LLU" ms\n", dasher->rep_id, gf_net_get_utc()));
+
+	return GF_OK;
+}
