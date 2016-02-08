@@ -35,6 +35,12 @@ loook_opt* loook_init(void){
 	return opt;
 }
 
+#ifdef USE_GPAC_LOG
+static void on_gpac_log(void *cbk, u32 ll, u32 lm, const char *fmt, va_list list)
+{
+	vfprintf(stderr, fmt, list);
+}
+#endif
 
 /// <summary>
 /// Entry point for the application
@@ -59,7 +65,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	options = loook_init();
 	
 	gf_sys_init(GF_FALSE);
-
+#ifdef USE_GPAC_LOG
+	gf_log_set_tool_level(GF_LOG_DASH, GF_LOG_DEBUG);
+	if (gf_log_tool_level_on(GF_LOG_DASH, GF_LOG_DEBUG)) {
+		printf("log on");
+	} else {
+		printf("log off");
+	}
+	gf_log_set_callback(NULL, on_gpac_log);
+#endif
 	dasher = muxer_init(options);
 
 	if(!dasher){

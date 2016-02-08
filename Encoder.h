@@ -44,7 +44,18 @@ extern "C" {
 #define BPS 500000
 */
 
+#define USE_GPAC_LOG 1
+
 #define INPUT_IS_RGB 1
+
+#ifndef USE_GPAC_LOG
+#ifdef GF_LOG
+#undef GF_LOG
+#define GF_LOG(_log_level, _log_tools, __args) if(_log_level==GF_LOG_ERROR){ \
+	printf("ERROR - %d %d [FILE: %s , LINE: %d ] %s \n", _log_level, _log_tools, __FILE__, __LINE__, __args); \
+}else{printf(__args);} 
+#endif
+#endif
 
 typedef struct{
 	u32 width;

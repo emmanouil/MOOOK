@@ -447,7 +447,7 @@ GF_Err muxer_open_segment(DASHout *dasher, char *dir, char *id_name, int seg){
 		GF_LOG(GF_LOG_ERROR, GF_LOG_DASH, ("%s: gf_isom_start_segment\n", gf_error_to_string(ret)));
 		return ret;
 	}
-	GF_LOG(GF_LOG_INFO, GF_LOG_DASH, ("[DashCast] Opening new segment %s at UTC "LLU" ms\n", name, gf_net_get_utc()));
+	GF_LOG(GF_LOG_INFO, GF_LOG_DASH, ("[DashCast] Opening new segment at "LLU" \n", gf_net_get_utc()));
 	return GF_OK;
 
 }
