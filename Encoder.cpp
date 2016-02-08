@@ -199,9 +199,9 @@ int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 
 	if (dasher->encoded_frame_size >= 0) {
 		if (got_packet) {
-//			dasher->codec_ctx->coded_frame->pts = dasher->codec_ctx->coded_frame->pkt_pts = pkt.pts;
-//			dasher->codec_ctx->coded_frame->pkt_dts = pkt.dts;
-//			dasher->codec_ctx->coded_frame->key_frame = (pkt.flags & AV_PKT_FLAG_KEY) ? 1 : 0;
+			dasher->codec_ctx->coded_frame->pts = dasher->codec_ctx->coded_frame->pkt_pts = pkt.pts;
+			dasher->codec_ctx->coded_frame->pkt_dts = pkt.dts;
+			dasher->codec_ctx->coded_frame->key_frame = (pkt.flags & AV_PKT_FLAG_KEY) ? 1 : 0;
 		}
 	}
 	if (dasher->encoded_frame_size < 0) {
@@ -338,7 +338,7 @@ static GF_Err import_avc_extradata(const u8 *extradata, const u64 extradata_size
 static GF_Err muxer_write_config(DASHout *dasher, u32 *di, u32 track)
 {
 	GF_Err ret;
-	if (dasher->codec_ctx->codec_id == CODEC_ID_H264) {
+	if (dasher->codec_ctx->codec_id == AV_CODEC_ID_H264) {	//old: CODEC_ID_H264
 		GF_AVCConfig *avccfg;
 		avccfg = gf_odf_avc_cfg_new();
 		if (!avccfg) {
