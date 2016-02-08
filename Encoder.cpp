@@ -34,12 +34,15 @@ DASHout *muxer_init(loook_opt *o){
 	DASHout *dasher;
 	GF_SAFEALLOC(dasher, DASHout);
 
-	dasher->o = o;
+	dasher->o = o;	//LOOOK options ref
+	dasher->colFrameCount = dasher->skelFrameCount = 0;	//frame counters
+
 	dasher->sample = gf_isom_sample_new();
 	dasher->isof = NULL;
 	width = o->width;
 	height = o->height;
 
+	dasher->seg_num = 1;
 	dasher->seg_dur = o->seg_dur_in_ms;
 	dasher->gop_size = o->gop_size;
 	dasher->frame_duration = o->frame_duration;

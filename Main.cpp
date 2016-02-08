@@ -25,7 +25,6 @@ loook_opt* loook_init(void){
 	opt->bitrate = 500000;
 	opt->seg_dur_in_ms = 1000;
 	opt->timescale = 1000000;
-	opt->seg_num = 1;
 	opt->data_size = opt->width * opt->height * 3;
 
 	opt->now = 0;

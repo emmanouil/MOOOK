@@ -67,7 +67,7 @@ typedef struct{
 	u32 bitrate;
 	u32 seg_dur_in_ms;
 	u32 timescale;
-	int seg_num;
+//	u64 seg_num;	//moved to DASHout struct
 	u32 data_size;
 
 	u64 now;
@@ -108,11 +108,15 @@ typedef struct{
 
 	/*kinect frames*/
 	colourFrame *nextColourFrame;
+	u64 colFrameCount;
 	//skelFrame *nextSkelFrame;
+	u64 skelFrameCount;
 
 	u64 sys_start;
+	u64 prev_pts;
 
 	int seg_dur;
+	u64 seg_num;
 
 	u64 first_dts_in_fragment;
 
