@@ -129,7 +129,7 @@ DASHout *muxer_init(loook_opt *o){
 
 
 	
-	dasher->sys_start = gf_sys_clock_high_res();
+	dasher->sys_start = 0;
 	return dasher;
 }
 

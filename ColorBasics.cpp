@@ -384,8 +384,15 @@ void CColorBasics::ProcessColor(DASHout* dasher)
 
 		//Frame number
 		cFrame->number = imageFrame.dwFrameNumber;
-		cFrame->pts = gf_sys_clock_high_res() - dasher->sys_start;
-
+		if (!dasher->sys_start) {
+			dasher->sys_start = gf_sys_clock_high_res();
+			dasher->prev_pts = 0;
+			cFrame->pts = 0;
+		} else {	
+			cFrame->pts = gf_sys_clock_high_res() - dasher->sys_start;
+			printf("CTS diff is %d ms\n", (u32) (cFrame->pts - dasher->prev_pts) / 1000);
+			dasher->prev_pts = cFrame->pts;
+		}
 		//convert RGBA to RGB
 		unsigned char * currFrame = (unsigned char *)LockedRect.pBits;
 
