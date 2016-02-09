@@ -216,7 +216,7 @@ int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	return -1;
 }
 
-void destroy_muxer(DASHout *dasher){
+void muxer_destroy(DASHout *dasher){
 	sws_freeContext(dasher->sws_ctx);
 	av_free(dasher->codec_ctx);
 	av_free(dasher->vbuf);
@@ -517,7 +517,6 @@ int muxer_write_video_frame(DASHout *dasher)
 	gf_bs_del(out_bs);
 	return 0;
 }
-
 
 int muxer_write_frame(DASHout *dasher, u64 frame_nb)
 {

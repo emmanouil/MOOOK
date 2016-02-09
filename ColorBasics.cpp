@@ -134,6 +134,14 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
         }
     }
 
+	if(WM_QUIT == msg.message){
+		if(dasher->segment_started){
+			muxer_close_segment(dasher);
+		}
+		muxer_destroy(dasher);
+		system("PAUSE");
+	}
+
     return static_cast<int>(msg.wParam);
 }
 

@@ -138,6 +138,8 @@ typedef struct{
 
 DASHout *muxer_init(loook_opt *options);
 
+void muxer_destroy(DASHout *dasher);
+
 int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS);
 
 colourFrame *init_cFrame(size_t size);
