@@ -434,16 +434,16 @@ int muxer_create_init_segment(DASHout *dasher, char *filename)
 }
 
 
-GF_Err muxer_open_segment(DASHout *dasher, char *dir, char *id_name, int seg){
-	GF_Err ret = -1;
+GF_Err muxer_open_segment(DASHout *dasher, char *directory, char *id_name, u64 seg){
+	GF_Err ret = GF_INVALID_CONFIGURATION;
 	char name[GF_MAX_PATH];
 
 	if (seg == 1) {
-		snprintf(name, sizeof(name), "%s/%s_init_gpac.mp4", directory, id_name);
+		_snprintf_s(name, sizeof(name), "%s/%s_init_gpac.mp4", directory, id_name);
 		muxer_create_init_segment(dasher, name);
 		dasher->first_dts_in_fragment = 0;
 	}
-	snprintf(name, sizeof(name), "%s/%s_%d_gpac.m4s", directory, id_name, seg);
+	_snprintf_s (name, sizeof(name), "%s/%s_%d_gpac.m4s", directory, id_name, seg);
 
 	ret = gf_isom_start_segment(dasher->isof, name, (Bool)1);
 	if (ret != GF_OK) {
@@ -454,6 +454,7 @@ GF_Err muxer_open_segment(DASHout *dasher, char *dir, char *id_name, int seg){
 	return GF_OK;
 
 }
+
 int muxer_write_video_frame(DASHout *dasher)
 {
 	GF_Err ret;

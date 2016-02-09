@@ -154,7 +154,7 @@ static GF_Err muxer_write_config(DASHout *dasher, u32 *di, u32 track);
 int muxer_create_init_segment(DASHout *dasher, char *filename);
 
 /* Open new segment */
-GF_Err muxer_open_segment(DASHout *dasher, char *directory, char *id_name, int seg);
+GF_Err muxer_open_segment(DASHout *dasher, char *directory, char *id_name, u64 seg);
 
 /* Close it */
 GF_Err muxer_close_segment(DASHout *dasher);
