@@ -31,6 +31,8 @@ loook_opt* loook_init(void){
 	opt->timeref = 0;
 	opt->timeScreenshot = 0;
 
+	init_playlist();
+
 	return opt;
 }
 
