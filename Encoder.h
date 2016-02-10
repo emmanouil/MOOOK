@@ -87,7 +87,6 @@ typedef struct{
 	AVCodecContext *codec_ctx;
 	AVCodec *codec;
 	AVFrame *avframe;
-	AVPacket avpacket_out;
 	struct SwsContext *sws_ctx;
 
 	/* picture buffer */

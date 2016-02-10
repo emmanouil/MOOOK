@@ -47,10 +47,7 @@ DASHout *muxer_init(loook_opt *o){
 	dasher->gop_size = o->gop_size;
 	dasher->frame_duration = o->frame_duration;
 
-	dasher->avpacket_out.size = 0;
-
 	dasher->avframe = av_frame_alloc();
-	av_init_packet(&dasher->avpacket_out);
 
 	//alloc a FFMPEG buffer to store encoded data
 	dasher->vbuf_size = 9 * width * height + 10000;
@@ -191,7 +188,7 @@ int muxer_encode(DASHout *dasher, u8 *frame, u32 frame_size, u64 PTS){
 	// Param 4 : [out] 1 if output packet non-empty and 0 if empty
 
 	//Return 0 on success, negative error code on failure
-	dasher->encoded_frame_size = avcodec_encode_video2(dasher->codec_ctx, &dasher->avpacket_out, dasher->avframe, &got_packet);
+	dasher->encoded_frame_size = avcodec_encode_video2(dasher->codec_ctx, &pkt, dasher->avframe, &got_packet);
 
 
 	if (dasher->encoded_frame_size >= 0)
@@ -529,9 +526,6 @@ int muxer_write_frame(DASHout *dasher, u64 frame_nb)
 			return -1;
 
 		dasher->first_dts_in_fragment = dasher->codec_ctx->coded_frame->pkt_dts;
-		if(dasher->avpacket_out.dts == dasher->codec_ctx->coded_frame->pkt_dts){
-			printf("%d %d\n",dasher->codec_ctx->coded_frame->pts,dasher->avpacket_out.pts);
-		}
 		if (!dasher->segment_started) {
 			dasher->pts_at_segment_start = dasher->codec_ctx->coded_frame->pts;
 			dasher->segment_started = GF_TRUE;
