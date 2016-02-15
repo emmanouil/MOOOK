@@ -429,7 +429,8 @@ void CColorBasics::ProcessColor(DASHout* dasher)
 			dasher->prev_pts = 0;
 			cFrame->pts = 0;
 		} else {	
-			cFrame->pts = gf_sys_clock_high_res() - dasher->sys_start;
+			//TODO: fix timing here and
+			cFrame->pts = 30*(gf_sys_clock_high_res() - dasher->sys_start)/1000000;
 			printf("CTS diff is %d ms\n", (u32) (cFrame->pts - dasher->prev_pts) / 1000);
 			dasher->prev_pts = cFrame->pts;
 		}

@@ -545,6 +545,7 @@ int muxer_write_frame(DASHout *dasher, u64 frame_nb)
 	//we may have rounding errors on the input PTS :( add half frame dur safety
 
 	//flush segments based on the cumultated duration , to avoid drift
+	//TODO and here
 	if (1000 * (dasher->last_pts - dasher->pts_at_first_segment + 3 * dasher->frame_duration / 2) / dasher->timescale >= (dasher->nb_segments + 1)*dasher->seg_dur) {
 		return 1;
 	}
