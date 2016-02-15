@@ -161,6 +161,8 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 /// </summary>
 void CColorBasics::Update(DASHout* dasher)
 {
+	u64 timeref = 0;	//TODO fix/move this
+
     if (NULL == m_pNuiSensor)
     {
         return;
@@ -174,6 +176,25 @@ void CColorBasics::Update(DASHout* dasher)
 
 	if(dasher->nextColourFrame){
 		int res = muxer_encode(dasher, (u8 *) dasher->nextColourFrame->kinectFrame, dasher->nextColourFrame->size,dasher->nextColourFrame->pts);
+
+		if((res>=0)&&(!dasher->segment_started)){
+			res = muxer_open_segment(dasher, "x64/Debug/out", "seg", dasher->seg_num);
+			timeref = gf_sys_clock_high_res() - dasher->sys_start;
+			printf("\t\tOpening segment time : %llu\n", timeref);
+		}
+
+		if(res>=0){
+			res = muxer_write_frame(dasher, dasher->colFrameCount);
+			dasher->colFrameCount++;
+		}
+
+		if(res==1){
+			res = muxer_close_segment(dasher);
+			if(res==GF_OK){
+				dasher->seg_num = write_playlist(dasher->seg_num, timeref);
+			}
+		}
+
 
 	}
 
