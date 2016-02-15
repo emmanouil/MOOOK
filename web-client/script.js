@@ -1,3 +1,11 @@
+/*	We first fetch the playlist
+ *	Then the MSE is opened
+ *	When the sourceopene is fired we feed the first element of the playlist (we assume to be the init .mp4 file)
+ *	After that for each playlist element we check if its coords or segment
+ *	And appendNextMediaSegment or handleCoordSet is called
+ */
+
+
 var playlist_dir = '/x64/Debug/out/playlist.m3u8';
 var mime_codec = 'video/mp4; codecs="avc1.42c01e"';
 var mediaSource = new MediaSource();
@@ -68,7 +76,12 @@ function firstSegment(){
 			video.play();
       		return;
 		}else{
-			fetch(playlist.splice(1, 1).toString(),appendNextMediaSegment,"arraybuffer");
+			element = playlist.splice(1, 1).toString();
+			if(element.endsWith('.m4s')){	//we have a segment
+				fetch(element,appendNextMediaSegment,"arraybuffer");
+			}else{	//we have a coordinate set
+				handleCoordSet(element);
+			}
 		}
     };
     sourceBuffer.addEventListener('updateend', firstAppendHandler);
@@ -107,6 +120,7 @@ function appendNextMediaSegment(frag_resp) {
     mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
 }
 
+/*
 function onSeeking(mediaSource, e) {
     var video = e.target;
 
@@ -127,7 +141,7 @@ function onSeeking(mediaSource, e) {
 function onProgress(mediaSource, e) {
     appendNextMediaSegment(mediaSource);
 }
-
+*/
 
 //Content-loading functions
 function fetch(what, where, resp_type){
@@ -151,4 +165,8 @@ function fetch_pl(){
 function parse_playlist(){
 	playlist = this.responseText.split(/\r\n|\r|\n/);	//split on break-line
 	req_status = this.status;
+}
+
+function handleCoordSet(coors){
+	console.log(coors);
 }
