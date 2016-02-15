@@ -7,6 +7,8 @@
 !Encoder.h
 !Main.cpp
 !Main.h
+!Tools.cpp
+!Tools.h
 
 #client-side
 !web-client/
