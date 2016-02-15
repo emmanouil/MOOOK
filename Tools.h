@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <sstream>
+#include "NuiApi.h"
 
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
@@ -21,6 +22,8 @@ void init_playlist();
 
 // returns new segment number
 u64 write_playlist_segment(u64 seg_num, u64 timeref);
+
+u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref);
 
 #endif
 

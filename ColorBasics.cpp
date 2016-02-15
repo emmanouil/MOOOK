@@ -197,7 +197,7 @@ void CColorBasics::Update(DASHout* dasher)
 		if(res==1){
 			res = muxer_close_segment(dasher);
 			if(res==GF_OK){
-				dasher->seg_num = write_playlist(dasher->seg_num, timeref);
+				dasher->seg_num = write_playlist_segment(dasher->seg_num, timeref);
 			}
 		}
 
@@ -503,6 +503,43 @@ void CColorBasics::ProcessColor(DASHout* dasher)
 
     // Release the frame
     m_pNuiSensor->NuiImageStreamReleaseFrame(m_pColorStreamHandle, &imageFrame);
+}
+
+void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
+
+	putchar('\n');
+    NUI_SKELETON_FRAME skeletonFrame = {0};
+
+    HRESULT hr = m_pNuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame);
+    if ( FAILED(hr) )
+    {
+        return;
+    }
+
+    // smooth out the skeleton data
+    m_pNuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
+
+    for (int i = 0 ; i < NUI_SKELETON_COUNT; ++i)
+    {
+        NUI_SKELETON_TRACKING_STATE trackingState = skeletonFrame.SkeletonData[i].eTrackingState;
+
+        if (NUI_SKELETON_TRACKED == trackingState)
+        {
+			dasher->skelFrameCount = write_playlist_skeleton(skeletonFrame, i, dasher->skelFrameCount, timeref);
+			printf("\n tracked %d, %d \n", skeletonFrame.SkeletonData[i].dwTrackingID, i);
+			return;	//we assume only one skeleton
+
+            // We're tracking the skeleton, draw it
+//            DrawSkeleton(skeletonFrame.SkeletonData[i], width, height);
+        }
+        else if (NUI_SKELETON_POSITION_ONLY == trackingState)
+        {
+            // we've only received the center point of the skeleton (not the coords)
+			// we do not care about this now
+        }
+    }
+
+
 }
 
 /// <summary>

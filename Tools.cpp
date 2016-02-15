@@ -108,3 +108,42 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 	return seg_num;
 
 }
+
+/*
+ * Write to file using line format:
+ * T:t A:x,y,z 0:x,y,z 1:x,y,z ....
+ * where T is the timestamp in ms, A are the coords of the Skeleton (center) and the rest are of the joints
+ * Approx ranges for x:{-2.2,+2.2), y:{-1.6,+1.6}, z:{0.0,+4.0) 
+ * NOTE: If a position is not available it stays blank (e.g. for 0 being unavailable A:2,2,2 0: 1:2,2,2 )
+ * TODO: maybe add timeref
+ */
+u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
+
+	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
+	LARGE_INTEGER k_frameTimestamp = skel.liTimeStamp;
+	u64 k_frameNo = skel.dwFrameNumber;
+	Vector4 k_floor = skel.vFloorClipPlane;
+	timeref = timeref/1000;	//we need it in ms
+
+	
+	playlistStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+
+	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
+		playlistStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+			 playlistStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
+		}
+	}
+
+	playlistStream << "\n";
+
+	playlistFile.open("x64/Debug/out/playlist.m3u8");
+	if (playlistFile.is_open()){
+		playlistFile << playlistStream.str();
+	}
+			
+	playlistFile.close();
+
+	skel_num++;
+	return skel_num;
+}
