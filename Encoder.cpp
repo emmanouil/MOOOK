@@ -85,7 +85,7 @@ DASHout *muxer_init(loook_opt *o){
 	dasher->codec_ctx->time_base.den = (o->seg_dur_in_ms/1000)*o->frame_per_segment;
 
 	//dasher->codec_ctx->pix_fmt = AV_PIX_FMT_RGB24;
-	dasher->codec_ctx->gop_size = 30;
+	dasher->codec_ctx->gop_size = o->gop_size;
 
 	//TODO: check these values
 	av_opt_set(dasher->codec_ctx->priv_data, "vprofile", "baseline", 0);
