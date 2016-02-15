@@ -173,6 +173,12 @@ void CColorBasics::Update(DASHout* dasher)
         ProcessColor(dasher);
     }
 
+    if (WAIT_OBJECT_0 == WaitForSingleObject(m_hNextSkeletonEvent, INFINITE) )
+    {
+		//TODO add process skel function
+		timeref = gf_sys_clock_high_res() - dasher->sys_start;
+		ProcessSkeleton(dasher, timeref);
+    }
 
 	if(dasher->nextColourFrame){
 		int res = muxer_encode(dasher, (u8 *) dasher->nextColourFrame->kinectFrame, dasher->nextColourFrame->size,dasher->nextColourFrame->pts);
@@ -328,11 +334,14 @@ HRESULT CColorBasics::CreateFirstConnected()
     if (NULL != m_pNuiSensor)
     {
         // Initialize the Kinect and specify that we'll be using color
-        hr = m_pNuiSensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_COLOR); 
+        hr = m_pNuiSensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_COLOR | NUI_INITIALIZE_FLAG_USES_SKELETON); 
         if (SUCCEEDED(hr))
         {
             // Create an event that will be signaled when color data is available
             m_hNextColorFrameEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+            // Create an event that will be signaled when skeleton data is available
+            m_hNextSkeletonEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
 
             // Open a color image stream to receive color frames
 			//TODO: Check image format https://msdn.microsoft.com/en-us/library/nuiimagecamera.nui_image_type.aspx (we now have RGB) 
@@ -343,6 +352,12 @@ HRESULT CColorBasics::CreateFirstConnected()
                 2,
                 m_hNextColorFrameEvent,
                 &m_pColorStreamHandle);
+
+			if(!FAILED(hr)){
+				// Open a skeleton stream to receive skeleton data
+				hr = m_pNuiSensor->NuiSkeletonTrackingEnable(m_hNextSkeletonEvent, 0);
+			}
+
         }
     }
 

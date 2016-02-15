@@ -101,7 +101,7 @@ private:
     /// <summary>
     /// Handle new skeleton data
     /// </summary>
-    void                    ProcessSkeleton(DASHout* dasher);
+    void                    ProcessSkeleton(DASHout* dasher, u64 timeref);
 
     /// <summary>
     /// Set the status bar message
