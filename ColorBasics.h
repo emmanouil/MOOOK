@@ -10,6 +10,7 @@
 #include "NuiApi.h"
 #include "ImageRenderer.h"
 #include "Encoder.h"
+#include "Tools.h"
 
 class CColorBasics
 {
