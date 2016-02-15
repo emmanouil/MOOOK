@@ -123,6 +123,17 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 
         while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
         {
+
+#ifdef _DEBUG
+			if(WM_KEYDOWN == msg.message)
+				switch(msg.wParam){
+				case(VK_SPACE):	//we have space
+				case(0x50):		//or 'P'
+					//system("PAUSE");
+					printf("used for testing \n");
+					break;
+				}
+#endif
             // If a dialog message will be taken care of by the dialog proc
             if ((hWndApp != NULL) && IsDialogMessageW(hWndApp, &msg))
             {
