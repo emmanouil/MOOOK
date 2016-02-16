@@ -85,7 +85,7 @@ private:
     /// <summary>
     /// Main processing function
     /// </summary>
-    void                    Update(DASHout* dasher);
+    void                    Update(DASHout* dasher, DWORD event_res);
 
     /// <summary>
     /// Create the first connected Kinect found 
