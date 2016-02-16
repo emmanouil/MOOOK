@@ -64,10 +64,13 @@ function firstSegment(){
       return;
     }
 
-    // Append the initialization segment.
-    var firstAppendHandler = function(e) {
-      var sourceBuffer = e;
-      //sourceBuffer.removeEventListener('updateend', firstAppendHandler);
+    sourceBuffer.addEventListener('updateend', appendHandler);
+    sourceBuffer.appendBuffer(initSegment);
+}
+
+// Append the initialization segment.
+function appendHandler(){
+      //sourceBuffer.removeEventListener('updateend', appendHandler);
 
       // Append some initial media data.
 		if(playlist[1]==null || playlist[1].length<2){
@@ -83,12 +86,8 @@ function firstSegment(){
 				handleCoordSet(element);
 			}
 		}
-    };
-    sourceBuffer.addEventListener('updateend', firstAppendHandler);
-    sourceBuffer.appendBuffer(initSegment);
-
-    
 }
+
 
 function appendNextMediaSegment(frag_resp) {
 	console.log('appenting on '+mediaSource.sourceBuffers[0].buffered.length);
@@ -169,4 +168,5 @@ function parse_playlist(){
 
 function handleCoordSet(coors){
 	console.log(coors);
+	appendHandler();
 }
