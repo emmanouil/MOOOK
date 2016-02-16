@@ -70,6 +70,7 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 {
     MSG       msg = {0};
     WNDCLASS  wc;
+	DWORD	event_res;
 
     // Dialog custom window class
     ZeroMemory(&wc, sizeof(wc));
@@ -115,11 +116,11 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
         // Or a Kinect event (hEvents)
         // Update() will check for Kinect events individually, in case more than one are signalled
 		//more info on MsgWaitForMultipleObjects function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms684242%28v=vs.85%29.aspx
-        MsgWaitForMultipleObjects(eventCount, hEvents, FALSE, INFINITE, QS_ALLINPUT);
+        event_res = MsgWaitForMultipleObjects(eventCount, hEvents, FALSE, INFINITE, QS_ALLINPUT);
 
         // Explicitly check the Kinect frame event since MsgWaitForMultipleObjects
         // can return for other reasons even though it is signaled.
-        Update(dasher);
+        if((0 <= event_res)&&(event_res < 2)) Update(dasher, event_res);
 
         while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -159,7 +160,7 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 /// <summary>
 /// Main processing function
 /// </summary>
-void CColorBasics::Update(DASHout* dasher)
+void CColorBasics::Update(DASHout* dasher, DWORD event_res)
 {
 	u64 timeref = 0;	//TODO fix/move this
 
@@ -173,7 +174,7 @@ void CColorBasics::Update(DASHout* dasher)
         ProcessColor(dasher);
     }
 
-    if (WAIT_OBJECT_0 == WaitForSingleObject(m_hNextSkeletonEvent, INFINITE) )
+    if (event_res == 1 && WAIT_OBJECT_0 == WaitForSingleObject(m_hNextSkeletonEvent, INFINITE) )
     {
 		//TODO add process skel function
 		timeref = gf_sys_clock_high_res() - dasher->sys_start;
@@ -201,7 +202,7 @@ void CColorBasics::Update(DASHout* dasher)
 			}
 		}
 
-
+		dasher->nextColourFrame = NULL;
 	}
 
 }
