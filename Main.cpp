@@ -20,7 +20,6 @@ loook_opt* loook_init(void){
 	opt->height = 480;
 	opt->frame_per_segment = 30;
 	opt->frame_duration = 1;
-	opt->segment_duration = 30;
 	opt->gop_size = 30;
 	opt->bitrate = 5000000;
 	opt->seg_dur_in_ms = 1000;
