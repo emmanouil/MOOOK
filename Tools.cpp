@@ -4,6 +4,7 @@
 using namespace std;
 #endif
 
+
 // maximum mumber of lines the output console should have
 static const WORD MAX_CONSOLE_LINES = 500;
 //std::string ipAddr = "137.194.23.204";
@@ -11,6 +12,7 @@ std::string ipAddr = "localhost";
 
 std::ostringstream vidListStream;
 std::ostringstream playlistStream;
+std::ostringstream skelListStream;	//this is used only for the projected join coordinates
 std::ostringstream finalStream;
 std::string tmp;
 
@@ -125,21 +127,41 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	Vector4 k_floor = skel.vFloorClipPlane;
 	timeref = timeref/1000;	//we need it in ms
 
+	//for holding the projected joint coordinates
+    LONG x, y;
+    USHORT depth;
+
 	
 	playlistStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
 
+	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
+	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
+
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
+
+		//write the joint coordinates
 		playlistStream << " " << i << ":";
 		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
 			 playlistStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
 		}
+
+
+		//write the projected values as well (as a different entry)
+		skelListStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+		    NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
+			skelListStream << x << "," << y << "," << depth;
+		}
 	}
+	skelListStream << "\n";
+
 
 	playlistStream << "\n";
 
 	playlistFile.open("x64/Debug/out/playlist.m3u8");
 	if (playlistFile.is_open()){
 		playlistFile << playlistStream.str();
+		playlistFile << skelListStream.str();
 	}
 			
 	playlistFile.close();
