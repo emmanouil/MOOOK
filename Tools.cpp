@@ -12,7 +12,7 @@ std::string ipAddr = "localhost";
 
 std::ostringstream vidListStream;
 std::ostringstream playlistStream;
-std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+
 std::ostringstream finalStream;
 std::string tmp;
 
@@ -126,8 +126,9 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	u64 k_frameNo = skel.dwFrameNumber;
 	Vector4 k_floor = skel.vFloorClipPlane;
 	timeref = timeref/1000;	//we need it in ms
+	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
 
-	//for holding the projected joint coordinates
+	//vars for holding the projected joint coordinates
     LONG x, y;
     USHORT depth;
 
@@ -153,15 +154,14 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 			skelListStream << x << "," << y << "," << depth;
 		}
 	}
-	skelListStream << "\n";
+	
 
 
-	playlistStream << "\n";
+	playlistStream << "\n" << skelListStream.str() << "\n";
 
 	playlistFile.open("x64/Debug/out/playlist.m3u8");
 	if (playlistFile.is_open()){
 		playlistFile << playlistStream.str();
-		playlistFile << skelListStream.str();
 	}
 			
 	playlistFile.close();
