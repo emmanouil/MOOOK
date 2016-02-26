@@ -1,4 +1,8 @@
-/*	We first fetch the playlist
+/*	This file does the initializing, generic playlist parsing and the MSE actions
+ *	For coord-parsing and other function are in processor.js
+ *
+ *	Timeline for script.js:
+ *	We first fetch the playlist
  *	Then the MSE is opened
  *	When the sourceopene is fired we feed the first element of the playlist (we assume to be the init .mp4 file)
  *	After that for each playlist element we check if its coords or segment
