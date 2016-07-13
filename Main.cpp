@@ -36,7 +36,7 @@ loook_opt* loook_init(void){
 }
 
 #ifdef USE_GPAC_LOG
-static void on_gpac_log(void *cbk, u32 ll, u32 lm, const char *fmt, va_list list)
+static void on_gpac_log(void *cbk, GF_LOG_Level ll, GF_LOG_Tool lm, const char *fmt, va_list list)
 {
 	vfprintf(stderr, fmt, list);
 }
@@ -64,7 +64,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	
 	options = loook_init();
 	
-	gf_sys_init(GF_FALSE);
+	gf_sys_init(GF_MemTrackerNone);
 #ifdef USE_GPAC_LOG
 	gf_log_set_tool_level(GF_LOG_DASH, GF_LOG_DEBUG);
 	if (gf_log_tool_level_on(GF_LOG_DASH, GF_LOG_DEBUG)) {
