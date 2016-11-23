@@ -111,6 +111,7 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 
 }
 
+#if defined COORDS_TO_FILE && COORDS_TO_FILES > 0
 /*
  * Write to file using line format:
  * T:t A:x,y,z 0:x,y,z 1:x,y,z ....
@@ -169,3 +170,58 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	skel_num++;
 	return skel_num;
 }
+
+#else
+
+u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
+
+	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
+	LARGE_INTEGER k_frameTimestamp = skel.liTimeStamp;
+	u64 k_frameNo = skel.dwFrameNumber;
+	Vector4 k_floor = skel.vFloorClipPlane;
+	timeref = timeref/1000;	//we need it in ms
+	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+
+	//vars for holding the projected joint coordinates
+    LONG x, y;
+    USHORT depth;
+
+	
+	playlistStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+
+	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
+	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
+
+	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
+
+		//write the joint coordinates
+		playlistStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+			 playlistStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
+		}
+
+
+		//write the projected values as well (as a different entry)
+		skelListStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+		    NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
+			skelListStream << x << "," << y << "," << depth;
+		}
+	}
+	
+
+
+	playlistStream << "\n" << skelListStream.str() << "\n";
+
+	playlistFile.open("x64/Debug/out/playlist.m3u8");
+	if (playlistFile.is_open()){
+		playlistFile << playlistStream.str();
+	}
+			
+	playlistFile.close();
+
+	skel_num++;
+	return skel_num;
+}
+
+#endif
