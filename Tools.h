@@ -11,6 +11,15 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
+//Query service for modification of coordinates
+//Not implemented yet
+#define USE_SERVICE			1
+//Write coordinates to files (else write in playlist)
+#define COORDS_TO_FILES		1
+//One Coordinate set per file (otherwise incremental)
+#define ONE_SKEL_PER_FILE	1
+
+
 
 #ifdef _DEBUG
 void RedirectIOToConsole();

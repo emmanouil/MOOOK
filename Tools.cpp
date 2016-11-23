@@ -11,13 +11,15 @@ static const WORD MAX_CONSOLE_LINES = 500;
 std::string ipAddr = "localhost";
 
 std::ostringstream vidListStream;
-std::ostringstream playlistStream;
+std::ostringstream playlistStream;		//playlist output
+std::ostringstream coordinateStream;	//coordinates to be written to file
 
 std::ostringstream finalStream;
 std::string tmp;
 
 std::ofstream vidPlaylist;
 std::ofstream playlistFile;
+std::ofstream coordinateFile;
 
 
 #ifdef _DEBUG
@@ -111,15 +113,9 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 
 }
 
-#if defined COORDS_TO_FILE && COORDS_TO_FILES > 0
-/*
- * Write to file using line format:
- * T:t A:x,y,z 0:x,y,z 1:x,y,z ....
- * where T is the timestamp in ms, A are the coords of the Skeleton (center) and the rest are of the joints
- * Approx ranges for x:{-2.2,+2.2), y:{-1.6,+1.6}, z:{0.0,+4.0) 
- * NOTE: If a position is not available it stays blank (e.g. for 0 being unavailable A:2,2,2 0: 1:2,2,2 )
- * TODO: maybe add timeref
- */
+#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
+
+
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
 
 	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
@@ -128,13 +124,13 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	Vector4 k_floor = skel.vFloorClipPlane;
 	timeref = timeref/1000;	//we need it in ms
 	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+	std::ostringstream coordFileName;
 
 	//vars for holding the projected joint coordinates
     LONG x, y;
     USHORT depth;
-
 	
-	playlistStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+	coordinateStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
 
 	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
 	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
@@ -142,9 +138,9 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
 
 		//write the joint coordinates
-		playlistStream << " " << i << ":";
+		coordinateStream << " " << i << ":";
 		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
-			 playlistStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
+			 coordinateStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
 		}
 
 
@@ -156,23 +152,44 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 		}
 	}
 	
+#ifdef ONE_SKEL_PER_FILE
+	coordinateStream << "\n" << skelListStream.str() << "\n";
 
+	coordFileName << "x64/Debug/out/COORD_" << k_frameTimestamp.QuadPart << ".txt";
+	coordinateFile.open(coordFileName.str());
+	if (coordinateFile.is_open()){
+		coordinateFile << coordinateStream.str();
+	}
 
-	playlistStream << "\n" << skelListStream.str() << "\n";
+	coordinateFile.close();
+	skelListStream.str("");
+	skelListStream.clear();
+	coordinateStream.str("");
+	coordinateStream.clear();
+#else
+	coordinateStream << "\n" << skelListStream.str() << "\n";
 
-	playlistFile.open("x64/Debug/out/playlist.m3u8");
-	if (playlistFile.is_open()){
-		playlistFile << playlistStream.str();
+	coordFileName << "x64/Debug/out/COORD_" << k_frameTimestamp.QuadPart << ".txt";
+	coordinateFile.open(coordFileName.str());
+	if (coordinateFile.is_open()){
+		coordinateFile << coordinateStream.str();
 	}
 			
-	playlistFile.close();
-
+	coordinateFile.close();
+#endif
 	skel_num++;
 	return skel_num;
 }
-
 #else
 
+/*
+ * Write to file using line format:
+ * T:t A:x,y,z 0:x,y,z 1:x,y,z ....
+ * where T is the timestamp in ms, A are the coords of the Skeleton (center) and the rest are of the joints
+ * Approx ranges for x:{-2.2,+2.2), y:{-1.6,+1.6}, z:{0.0,+4.0) 
+ * NOTE: If a position is not available it stays blank (e.g. for 0 being unavailable A:2,2,2 0: 1:2,2,2 )
+ * TODO: maybe add timeref
+ */
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
 
 	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
