@@ -72,6 +72,13 @@ void RedirectIOToConsole(){
 void init_playlist(){
 	vidListStream << "],\n\"Video_Segment\": \"seg_init_gpac.mp4\"}\n";
 	playlistStream << "http://" << ipAddr << ":8080/x64/Debug/out/seg_init_gpac.mp4\n";
+#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
+	playlistFile.open("x64/Debug/out/playlist.m3u8");
+	if (playlistFile.is_open()){
+		playlistFile << playlistStream.str();
+	}
+	playlistFile.close();
+#endif
 }
 
 u64 write_playlist_segment(u64 seg_num, u64 timeref){
@@ -101,11 +108,17 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 //	skelListStream.str("");
 					
 	playlistStream << "http://" << ipAddr << ":8080/x64/Debug/out/seg_" << seg_num << "_gpac.m4s\n";
-	playlistFile.open("x64/Debug/out/playlist.m3u8");
+#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
+	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
+	if (playlistFile.is_open()){
+		playlistFile << "http://" << ipAddr << ":8080/x64/Debug/out/seg_" << seg_num << "_gpac.m4s\n";
+	}
+#else
+	playlistFile.open("x64/Debug/out/playlist.m3u8"
 	if (playlistFile.is_open()){
 		playlistFile << playlistStream.str();
 	}
-			
+#endif		
 	playlistFile.close();
 
 	seg_num++;
