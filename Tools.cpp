@@ -166,6 +166,13 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	skelListStream.clear();
 	coordinateStream.str("");
 	coordinateStream.clear();
+
+	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
+	if (playlistFile.is_open()){
+		playlistFile << coordFileName.str() << "\n";
+	}
+	playlistFile.close();
+
 #else
 	coordinateStream << "\n" << skelListStream.str() << "\n";
 
