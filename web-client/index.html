@@ -1,0 +1,54 @@
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Test Page</title>
+</head>
+
+<body>
+	<h3>Test Header</h3>
+	<p> audio sample app </p>
+	<video id="v" controls width="640" height="480">
+		<track kind="metadata" src="sample.vtt" label="Cues from Skeleton" default>
+	</video>
+    <canvas class="canvas" id="c">
+      Your browser does not support HTML5 canvas
+    </canvas>	
+	<!-- moved to worker -->
+	<!--<script src="skel_parser.js"></script>-->
+	<script src="script.js"></script>
+	<script src="visuals.js"></script>
+	<script src="audio_engine.js"></script>
+	<script src="tools.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.23/p5.js"></script>
+</body>
+
+<style>
+
+body {
+    background: black;
+}
+
+#c {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -180px 0 0 -240px;
+}
+
+#defaultCanvas0 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -180px 0 0 -240px;
+}
+
+#v {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -180px 0 0 -240px;
+}
+</style>
+
+</html>
