@@ -14,6 +14,9 @@
 !web-client/
 !web-client/index.html
 !web-client/script.js
+!web-client/skel_parser.js
+!web-client/tools.js
+!web-client/visuals.js
 
 
 ## Ignore Visual Studio temporary files, build results, and
