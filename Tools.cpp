@@ -72,13 +72,11 @@ void RedirectIOToConsole(){
 void init_playlist(){
 	vidListStream << "],\n\"Video_Segment\": \"seg_init_gpac.mp4\"}\n";
 	playlistStream << "http://" << ipAddr << ":8080/x64/Debug/out/seg_init_gpac.mp4\n";
-#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
 	playlistFile.open("x64/Debug/out/playlist.m3u8");
 	if (playlistFile.is_open()){
 		playlistFile << playlistStream.str();
 	}
 	playlistFile.close();
-#endif
 }
 
 u64 write_playlist_segment(u64 seg_num, u64 timeref){
@@ -108,26 +106,16 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 //	skelListStream.str("");
 					
 	playlistStream << "http://" << ipAddr << ":8080/x64/Debug/out/seg_" << seg_num << "_gpac.m4s\n";
-#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
 	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
 	if (playlistFile.is_open()){
 		playlistFile << "http://" << ipAddr << ":8080/x64/Debug/out/seg_" << seg_num << "_gpac.m4s\n";
 	}
-#else
-	playlistFile.open("x64/Debug/out/playlist.m3u8"
-	if (playlistFile.is_open()){
-		playlistFile << playlistStream.str();
-	}
-#endif		
 	playlistFile.close();
 
 	seg_num++;
 	return seg_num;
 
 }
-
-#if defined COORDS_TO_FILES && COORDS_TO_FILES > 0
-
 
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
 
@@ -165,7 +153,6 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 		}
 	}
 	
-#ifdef ONE_SKEL_PER_FILE
 	coordinateStream << "\n" << skelListStream.str() << "\n";
 
 	coordFileName << "x64/Debug/out/COORD_" << k_frameTimestamp.QuadPart << ".txt";
@@ -186,79 +173,6 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	}
 	playlistFile.close();
 
-#else
-	coordinateStream << "\n" << skelListStream.str() << "\n";
-
-	coordFileName << "x64/Debug/out/COORD_" << k_frameTimestamp.QuadPart << ".txt";
-	coordinateFile.open(coordFileName.str());
-	if (coordinateFile.is_open()){
-		coordinateFile << coordinateStream.str();
-	}
-			
-	coordinateFile.close();
-#endif
 	skel_num++;
 	return skel_num;
 }
-#else
-
-/*
- * Write to file using line format:
- * T:t A:x,y,z 0:x,y,z 1:x,y,z ....
- * where T is the timestamp in ms, A are the coords of the Skeleton (center) and the rest are of the joints
- * Approx ranges for x:{-2.2,+2.2), y:{-1.6,+1.6}, z:{0.0,+4.0) 
- * NOTE: If a position is not available it stays blank (e.g. for 0 being unavailable A:2,2,2 0: 1:2,2,2 )
- * TODO: maybe add timeref
- */
-u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
-
-	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
-	LARGE_INTEGER k_frameTimestamp = skel.liTimeStamp;
-	u64 k_frameNo = skel.dwFrameNumber;
-	Vector4 k_floor = skel.vFloorClipPlane;
-	timeref = timeref/1000;	//we need it in ms
-	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
-
-	//vars for holding the projected joint coordinates
-    LONG x, y;
-    USHORT depth;
-
-	
-	playlistStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
-
-	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
-	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
-
-	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
-
-		//write the joint coordinates
-		playlistStream << " " << i << ":";
-		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
-			 playlistStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
-		}
-
-
-		//write the projected values as well (as a different entry)
-		skelListStream << " " << i << ":";
-		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
-		    NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
-			skelListStream << x << "," << y << "," << depth;
-		}
-	}
-	
-
-
-	playlistStream << "\n" << skelListStream.str() << "\n";
-
-	playlistFile.open("x64/Debug/out/playlist.m3u8");
-	if (playlistFile.is_open()){
-		playlistFile << playlistStream.str();
-	}
-			
-	playlistFile.close();
-
-	skel_num++;
-	return skel_num;
-}
-
-#endif
