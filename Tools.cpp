@@ -84,9 +84,9 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 	vidListStream.seekp(0);
 	vidListStream << "\n\t\t{ \n\t\t\"Open_segment_time\":" << "\"" << timeref << "\",";
 	vidListStream << "\n\t\t\"Video_Segment\": \"seg_" << seg_num << "_gpac.m4s\",\n\t\t\"Skel_Segments\":";
-//	vidListStream << "[" << skelListStream.str() << "],\n\t\t";
-//	vidListStream << "\"Slides\": [" << imListStream.str() << "]\n";
-				
+	//	vidListStream << "[" << skelListStream.str() << "],\n\t\t";
+	//	vidListStream << "\"Slides\": [" << imListStream.str() << "]\n";
+
 	if (seg_num == 1){
 		vidListStream << "\t\t}\n";
 	}
@@ -102,9 +102,9 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 	vidPlaylist.close();
 
 	finalStream.str("");
-//	imListStream.str("");
-//	skelListStream.str("");
-					
+	//	imListStream.str("");
+	//	skelListStream.str("");
+
 	playlistStream << "http://" << ipAddr << ":8080/x64/Debug/out/seg_" << seg_num << "_gpac.m4s\n";
 	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
 	if (playlistFile.is_open()){
@@ -128,9 +128,9 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 	std::ostringstream coordFileName;
 
 	//vars for holding the projected joint coordinates
-    LONG x, y;
-    USHORT depth;
-	
+	LONG x, y;
+	USHORT depth;
+
 	coordinateStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
 
 	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
@@ -141,18 +141,18 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 		//write the joint coordinates
 		coordinateStream << " " << i << ":";
 		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
-			 coordinateStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
+			coordinateStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
 		}
 
 
 		//write the projected values as well (as a different entry)
 		skelListStream << " " << i << ":";
 		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
-		    NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
+			NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
 			skelListStream << x << "," << y << "," << depth;
 		}
 	}
-	
+
 	coordinateStream << "\n" << skelListStream.str() << "\n";
 
 	coordFileName << "x64/Debug/out/COORD_" << k_frameTimestamp.QuadPart << ".txt";
