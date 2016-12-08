@@ -19,7 +19,7 @@ Everything is put in `out` folder, which includes:
 `T:τ`timestamp(in ms)  
 `A:x,y,z`"centre" coordinates  
 `n:x,y,z` *where index `n` ∈ [0,19]* Joint Coordinate  
-see example here
+index reference [example](#coordinate-index-and-enum) and coordinate set [example](#coordinate-entry-example)
 
 
 ## Options
