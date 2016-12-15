@@ -163,6 +163,30 @@ void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 sk
 	skelListStream << " " << "D:" << delay;
 }
 
+
+bool flush_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+	std::ostringstream coordFileName;
+	coordFileName << "x64/Debug/out/COORD_" << seg_num << ".txt";
+	coordinateFile.open(coordFileName.str());
+	if (coordinateFile.is_open()){
+		coordinateFile << coordinateStream.str();
+	}
+
+	coordinateFile.close();
+	coordinateStream.str("");
+	coordinateStream.clear();
+
+	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
+	if (playlistFile.is_open()){
+		playlistFile << coordFileName.str() << "\n";
+	}else{
+		return false;
+	}
+	playlistFile.close();
+	return true;
+}
+
+
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
 
 	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
