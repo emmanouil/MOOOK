@@ -163,6 +163,45 @@ void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 sk
 	skelListStream << " " << "D:" << delay;
 }
 
+/*
+ * Used for multiple coords per file
+ * Called when new coordinate set arrives
+ */
+u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+	
+	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
+	LARGE_INTEGER k_frameTimestamp = skel.liTimeStamp;
+	u64 k_frameNo = skel.dwFrameNumber;
+	Vector4 k_floor = skel.vFloorClipPlane;
+	timeref = timeref/1000;	//we need it in ms
+//	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+
+	coordinateStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+
+
+	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
+
+		//write the joint coordinates
+		coordinateStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+			coordinateStream << skeleton.SkeletonPositions[i].x << "," << skeleton.SkeletonPositions[i].y << "," << skeleton.SkeletonPositions[i].z;
+		}
+
+/*
+		//write the projected values as well (as a different entry)
+		skelListStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+			NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
+			skelListStream << x << "," << y << "," << depth;
+		}
+*/
+	}
+
+	coordinateStream << "\n" ;
+
+	skel_num++;
+	return skel_num;
+}
 
 bool flush_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
 	std::ostringstream coordFileName;
