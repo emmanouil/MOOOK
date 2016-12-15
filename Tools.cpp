@@ -117,6 +117,52 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 
 }
 
+
+/*
+ * Simulate processing
+ *
+ */
+void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
+	timeref = timeref/1000;	//we need it in ms
+	//vars for holding the projected joint coordinates of the centre point
+	LONG x, y;
+	USHORT depth;
+	LARGE_INTEGER t1, t2, freq;
+	double delay;
+	
+		// get ticks per second
+	QueryPerformanceFrequency(&freq);
+
+	// start timer
+	QueryPerformanceCounter(&t1);
+
+	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
+	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
+
+	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
+		//write the rest of the projected values as well
+		skelListStream << " " << i << ":";
+		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
+			NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
+			skelListStream << x << "," << y << "," << depth;
+		}
+	}
+
+	//sleep (simulate processing)
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_int_distribution<> dist(MIN_PROC_DELAY, MAX_PROC_DELAY);
+	Sleep(dist(gen));
+
+	// stop timer
+	QueryPerformanceCounter(&t2);
+	delay = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;	//in ms
+
+	skelListStream << " " << "D:" << delay;
+}
+
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref){
 
 	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
