@@ -150,6 +150,9 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 	if(WM_QUIT == msg.message){
 		if(dasher->segment_started){
 			muxer_close_segment(dasher);
+			if(dasher->skelFrameCount>0){
+				flush_skeleton_coordinates(dasher->seg_num);
+			}
 		}
 		muxer_destroy(dasher);
 		system("PAUSE");
@@ -200,6 +203,12 @@ void CColorBasics::Update(DASHout* dasher, DWORD event_res)
 			res = muxer_close_segment(dasher);
 			if(res==GF_OK){
 				dasher->seg_num = write_playlist_segment(dasher->seg_num, timeref);
+			}
+			if(dasher->skelFrameCount>0){
+				res = flush_skeleton_coordinates(dasher->seg_num);
+				if(res == false){
+					printf("\n\n\n\nFLUSHING ERROR\n\n");
+				}
 			}
 		}
 
@@ -527,7 +536,8 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 
         if (NUI_SKELETON_TRACKED == trackingState)
         {
-			dasher->skelFrameCount = write_playlist_skeleton(skeletonFrame, i, dasher->skelFrameCount, timeref);
+			//dasher->skelFrameCount = write_playlist_skeleton(skeletonFrame, i, dasher->skelFrameCount, timeref);
+			dasher->skelFrameCount = push_skeleton_coordinates(skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
 			printf("\n tracked %d, %d \n", skeletonFrame.SkeletonData[i].dwTrackingID, i);
 			return;	//we assume only one skeleton
 

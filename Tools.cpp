@@ -203,7 +203,7 @@ u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 ske
 	return skel_num;
 }
 
-bool flush_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+bool flush_skeleton_coordinates(u64 seg_num){
 	std::ostringstream coordFileName;
 	coordFileName << "x64/Debug/out/COORD_" << seg_num << ".txt";
 	coordinateFile.open(coordFileName.str());
