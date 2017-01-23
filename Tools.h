@@ -21,12 +21,22 @@
 #define MIN_PROC_DELAY			0
 #define MAX_PROC_DELAY			3000
 
-
 #ifdef _DEBUG
 void RedirectIOToConsole();
 #endif
 
 typedef unsigned __int64 u64;
+
+struct skeletalData{
+	NUI_SKELETON_FRAME skel;
+	int index;
+	u64 skel_num;
+	u64 seg_num;
+	long long timeref;
+};
+
+
+
 
 void init_playlist();
 
