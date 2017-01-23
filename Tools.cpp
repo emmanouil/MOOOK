@@ -154,8 +154,8 @@ void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 sk
 	random_device rd;
 	mt19937 gen(rd());
 	uniform_int_distribution<> dist(MIN_PROC_DELAY, MAX_PROC_DELAY);
-	Sleep(dist(gen));
-
+	int millis = dist(gen);
+	Sleep(millis);
 	// stop timer
 	QueryPerformanceCounter(&t2);
 	delay = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;	//in ms
