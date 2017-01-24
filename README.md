@@ -14,6 +14,8 @@ Everything is put in `out` folder, which includes:
 - Video with an init and 1s-long segments
 - Files with coordinates for this segment (spatial and projected)
 - A playlist referencing the video and coord files 
+TODO: m3u to mpd
+TODO: add thread counter for finalizing
 
 ### Coordinates format
 `T:τ`timestamp(in ms)  
