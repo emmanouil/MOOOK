@@ -9,6 +9,7 @@
 #include "NuiApi.h"
 #include <random>
 
+#include "Threads.h"
 
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
@@ -39,6 +40,8 @@ struct skeletalData{
 
 
 void init_playlist();
+
+Threader *init_threader();
 
 // returns new segment number
 u64 write_playlist_segment(u64 seg_num, u64 timeref);

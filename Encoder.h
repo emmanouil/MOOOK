@@ -12,6 +12,9 @@
 
 #endif
 
+#include <sstream>
+#include "Threads.h"
+
 extern "C" {
 
 #include <libavformat/avformat.h>
@@ -31,7 +34,6 @@ extern "C" {
 #include <gpac/tools.h>
 }
 
-
 /*
 //VIDEOS
 #define WIDTH 640
@@ -47,6 +49,7 @@ extern "C" {
 #define USE_GPAC_LOG 1
 
 #define INPUT_IS_RGB 1
+
 
 #ifndef USE_GPAC_LOG
 #ifdef GF_LOG
@@ -132,6 +135,10 @@ typedef struct{
 
 	/* RFC6381 codec name, only valid when VIDEO_MUXER == GPAC_INIT_VIDEO_MUXER_AVC1 */
 	char codec6381[GF_MAX_PATH];
+
+	//Threader threader;
+	Threader *threader;
+	std::ostringstream proccessed_skels;
 }DASHout;
 
 

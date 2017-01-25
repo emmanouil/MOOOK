@@ -75,7 +75,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	gf_log_set_callback(NULL, on_gpac_log);
 #endif
 	dasher = muxer_init(options);
-
+	dasher->threader = init_threader();
 	if(!dasher){
 		return 1;
 	}	

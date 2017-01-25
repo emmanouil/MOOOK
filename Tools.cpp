@@ -79,6 +79,19 @@ void init_playlist(){
 	playlistFile.close();
 }
 
+Threader* init_threader(void){
+
+	Threader *threader;
+	GF_SAFEALLOC(threader, Threader);
+	threader->threadcount = 0;
+
+	threader->mutex = CreateMutex(NULL, FALSE, NULL);
+	if(threader->mutex == NULL) return NULL;
+
+	return threader;
+}
+
+
 u64 write_playlist_segment(u64 seg_num, u64 timeref){
 	tmp = vidListStream.str();
 	vidListStream.seekp(0);
