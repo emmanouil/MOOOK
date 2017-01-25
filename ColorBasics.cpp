@@ -104,6 +104,12 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 #ifdef _DEBUG
 		char cwd[1024];
 		if (_getcwd(cwd, sizeof(cwd)) != NULL) fprintf(stdout, "Current working dir: %s\n", cwd);
+		fprintf(stdout, "Checking Threader... ");
+		if(dasher->threader->mutex == NULL){
+			printErr("WARNING: thread initialization error\n");
+		}else{
+			fprintf(stdout, "OK\n");
+		}
 		if(dasher->colFrameCount==0)getchar();
 #endif
 
