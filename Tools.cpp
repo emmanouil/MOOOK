@@ -21,6 +21,7 @@ std::ofstream vidPlaylist;
 std::ofstream playlistFile;
 std::ofstream coordinateFile;
 
+std::stringstream errlog;
 
 #ifdef _DEBUG
 
@@ -297,4 +298,12 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 
 	skel_num++;
 	return skel_num;
+}
+
+void printErr(char *msg){
+	fprintf(stdout, msg);
+	errlog << msg;
+#if PAUSE_ON_ERROR
+	getchar();
+#endif
 }
