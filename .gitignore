@@ -9,6 +9,7 @@
 !Main.h
 !Tools.cpp
 !Tools.h
+!Threads.h
 
 #client-side
 !web-client/
