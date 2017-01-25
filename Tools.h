@@ -30,16 +30,15 @@ void RedirectIOToConsole();
 
 typedef unsigned __int64 u64;
 
-struct skeletalData{
+typedef struct{
 	NUI_SKELETON_FRAME skel;
 	int index;
 	u64 skel_num;
 	u64 seg_num;
 	long long timeref;
-};
-
-
-
+	DASHout* dasher;
+	Threader* threader;
+}skeletalData;
 
 void init_playlist();
 
