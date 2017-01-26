@@ -259,11 +259,14 @@ bool flush_skeleton_coordinates(u64 seg_num){
 	coordinateFile.open(coordFileName.str());
 	if (coordinateFile.is_open()){
 		coordinateFile << coordinateStream.str();
+		coordinateFile << proccessed_skels.str();
 	}
 
 	coordinateFile.close();
 	coordinateStream.str("");
 	coordinateStream.clear();
+	proccessed_skels.str("");
+	proccessed_skels.clear();
 
 	playlistFile.open("x64/Debug/out/playlist.m3u8", std::ios_base::app);
 	if (playlistFile.is_open()){
