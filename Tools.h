@@ -1,3 +1,5 @@
+#pragma once
+
 #include <windows.h>
 #include <iostream>
 #include <fstream>
@@ -8,8 +10,8 @@
 #include <sstream>
 #include "NuiApi.h"
 #include <random>
-
 #include "Threads.h"
+#include "Encoder.h"
 
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
