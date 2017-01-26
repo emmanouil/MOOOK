@@ -53,6 +53,8 @@ u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_
 
 u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num);
 
+void generate_projected_coords(skeletalData *in_d);
+
 bool flush_skeleton_coordinates(u64 seg_num);
 
 void printErr(char *msg);

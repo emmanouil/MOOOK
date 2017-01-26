@@ -138,7 +138,6 @@ typedef struct{
 
 	//Threader threader;
 	Threader *threader;
-	std::ostringstream proccessed_skels;
 }DASHout;
 
 

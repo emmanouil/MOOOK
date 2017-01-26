@@ -21,7 +21,10 @@ std::ofstream vidPlaylist;
 std::ofstream playlistFile;
 std::ofstream coordinateFile;
 
+std::stringstream proccessed_skels;
+
 std::stringstream errlog;
+
 
 #ifdef _DEBUG
 
@@ -69,6 +72,7 @@ void RedirectIOToConsole(){
 
 
 #endif
+
 
 void init_playlist(){
 	vidListStream << "],\n\"Video_Segment\": \"seg_init_gpac.mp4\"}\n";
@@ -131,21 +135,27 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 
 }
 
-
 /*
  * Simulate processing
  *
  */
-void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+void generate_projected_coords(skeletalData *in_d){
+	skeletalData in;
+	memcpy(&in, in_d, sizeof(skeletalData));
+
+	Threader *thr = in_d->threader;
+	DASHout *das = in_d->dasher;
+
 	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
-	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
-	timeref = timeref/1000;	//we need it in ms
+	NUI_SKELETON_DATA skeleton = in.skel.SkeletonData[in.index];
+	u64 timeref = in.timeref/1000;	//we need it in ms
 	//vars for holding the projected joint coordinates of the centre point
 	LONG x, y;
 	USHORT depth;
 	LARGE_INTEGER t1, t2, freq;
-	double delay;
-	
+	float delay;
+	BOOL mut_freed;
+
 		// get ticks per second
 	QueryPerformanceFrequency(&freq);
 
@@ -174,7 +184,33 @@ void generate_projected_coords(const NUI_SKELETON_FRAME &skel, int index, u64 sk
 	QueryPerformanceCounter(&t2);
 	delay = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;	//in ms
 
-	skelListStream << " " << "D:" << delay;
+	//write to stream
+	skelListStream << " " << "D:" << delay << "\n \n";
+
+	//acquire mutex
+	
+	DWORD waitResult = WaitForSingleObject(thr->mutex, 10);
+
+	switch(waitResult){
+		printf("Thread %d ", GetCurrentThreadId());
+		case WAIT_OBJECT_0:
+			printf("got the mutex...\n", GetCurrentThreadId());
+			proccessed_skels << skelListStream.str();
+			mut_freed = ReleaseMutex(thr->mutex);
+			if(!mut_freed){
+				printErr("ERROR on releasing the mutex...\n");
+			}else{
+				printf("Thread %d released the mutex...\n", GetCurrentThreadId());
+			}
+			break;
+		case WAIT_ABANDONED:
+			printf("Thread %d got ABANDONED mutex... [Line %d File %s] \n", GetCurrentThreadId(), __LINE__, __FILE__);
+			getchar();
+		default:
+			printf("got UNKNOWN mutex status... [Line %d File %s] \n", __LINE__, __FILE__);
+			getchar();
+	}
+
 }
 
 /*

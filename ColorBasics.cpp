@@ -528,6 +528,10 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
     NUI_SKELETON_FRAME skeletonFrame = {0};
 
     HRESULT hr = m_pNuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame);
+
+	skeletalData skeletonToThread;
+	DWORD threadId;
+
     if ( FAILED(hr) )
     {
         return;
@@ -544,6 +548,17 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
         {
 			//dasher->skelFrameCount = write_playlist_skeleton(skeletonFrame, i, dasher->skelFrameCount, timeref);
 			dasher->skelFrameCount = push_skeleton_coordinates(skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
+
+
+			skeletonToThread.skel =skeletonFrame;
+			skeletonToThread.index = i;
+			skeletonToThread.skel_num = dasher->skelFrameCount;
+			skeletonToThread.timeref = timeref;
+			skeletonToThread.seg_num = dasher->seg_num;
+			skeletonToThread.dasher = dasher;
+			skeletonToThread.threader = dasher->threader;
+			HANDLE hThread = CreateThread(0,0, (LPTHREAD_START_ROUTINE) generate_projected_coords, &skeletonToThread,0,&threadId);
+
 			printf("\n tracked %d, %d \n", skeletonFrame.SkeletonData[i].dwTrackingID, i);
 			return;	//we assume only one skeleton
 
