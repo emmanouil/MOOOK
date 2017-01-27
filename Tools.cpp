@@ -187,6 +187,9 @@ void generate_projected_coords(skeletalData *in_d){
 	//write to stream
 	skelListStream << " " << "D:" << delay << "\n \n";
 
+	//count
+	thr->threadcount--;
+
 	//acquire mutex
 	
 	DWORD waitResult = WaitForSingleObject(thr->mutex, 10);

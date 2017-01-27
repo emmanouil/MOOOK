@@ -124,8 +124,6 @@ DASHout *muxer_init(loook_opt *o){
 		}	
 	}
 
-
-	
 	dasher->sys_start = 0;
 	return dasher;
 }
