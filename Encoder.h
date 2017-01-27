@@ -138,6 +138,8 @@ typedef struct{
 
 	//Threader threader;
 	Threader *threader;
+
+	bool video_done;
 }DASHout;
 
 

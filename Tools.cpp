@@ -156,6 +156,17 @@ void generate_projected_coords(skeletalData *in_d){
 	float delay;
 	BOOL mut_freed;
 
+//TODOk check from HERE
+
+	printf("generating skel %u \n",in.skel_num);
+
+			if(das->threader != NULL)
+				printf("and it aint null\n");
+			if(!(das->skelFrameCount>0))
+				printf("but the skelly's wrong\n");
+
+//TODOk check to HERE
+
 		// get ticks per second
 	QueryPerformanceFrequency(&freq);
 
@@ -180,6 +191,7 @@ void generate_projected_coords(skeletalData *in_d){
 	uniform_int_distribution<> dist(MIN_PROC_DELAY, MAX_PROC_DELAY);
 	int millis = dist(gen);
 	Sleep(millis);
+	printf("generated skel %u \n",in.skel_num);	//TODOk remove
 	// stop timer
 	QueryPerformanceCounter(&t2);
 	delay = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;	//in ms
@@ -214,6 +226,13 @@ void generate_projected_coords(skeletalData *in_d){
 			getchar();
 	}
 
+
+//TODOk check from HERE
+			if(das->threader != NULL)
+				printf("and it aint null\n");
+			if(!(das->skelFrameCount>0))
+				printf("but the skelly's wrong\n");
+//TODOk check to HERE
 }
 
 /*
@@ -249,7 +268,6 @@ u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 ske
 		}
 */
 	}
-
 	coordinateStream << "\n" ;
 
 	skel_num++;

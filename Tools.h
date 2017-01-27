@@ -22,6 +22,10 @@
 //Not implemented yet
 #define USE_SERVICE			1
 
+//Maximum number of threads
+// we set to 100 since ~30Hz data rate and MAX_PROC_DELAY = 3000ms
+#define MAX_THREADS		100
+
 //when simulating processing (in ms)
 #define MIN_PROC_DELAY			0
 #define MAX_PROC_DELAY			3000

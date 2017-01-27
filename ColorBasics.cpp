@@ -157,7 +157,9 @@ int CColorBasics::Run(HINSTANCE hInstance, int nCmdShow, DASHout* dasher)
 		if(dasher->segment_started){
 			muxer_close_segment(dasher);
 			if(dasher->skelFrameCount>0){
+				printf("\n\n FINAL FLUSHING \n\n");		//TODOk remove
 				flush_skeleton_coordinates(dasher->seg_num);
+				dasher->video_done = true;	//TODOk check
 			}
 		}
 		muxer_destroy(dasher);
@@ -211,6 +213,7 @@ void CColorBasics::Update(DASHout* dasher, DWORD event_res)
 				dasher->seg_num = write_playlist_segment(dasher->seg_num, timeref);
 			}
 			if(dasher->skelFrameCount>0){
+				printf("\n\n FLUSHING \n\n");	//TODOk remove
 				res = flush_skeleton_coordinates(dasher->seg_num);
 				if(res == false){
 					printf("\n\n\n\nFLUSHING ERROR\n\n");
@@ -557,6 +560,24 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 			skeletonToThread.seg_num = dasher->seg_num;
 			skeletonToThread.dasher = dasher;
 			skeletonToThread.threader = dasher->threader;
+
+			//TODOk check from HERE
+			printf("sendin'  %d %u %u %u \n",skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
+			if(dasher->threader != NULL)
+				printf("and it aint null\n");
+			if(!(dasher->skelFrameCount>0))
+				printf("but the skelly's wrong\n");
+
+			/*
+			memcpy(&skeletonToThread.skel, &skeletonFrame, sizeof(skeletonFrame));
+			memcpy(&skeletonToThread.index, &i, sizeof(int));
+			memcpy(&skeletonToThread.skel_num, &dasher->skelFrameCount, sizeof(u64));
+			memcpy(&skeletonToThread.timeref, &timeref, sizeof(u64));
+			memcpy(&skeletonToThread.seg_num, &dasher->seg_num, sizeof(u64));
+			*/
+
+			//TODOk check to HERE
+
 			HANDLE hThread = CreateThread(0,0, (LPTHREAD_START_ROUTINE) generate_projected_coords, &skeletonToThread,0,&threadId);
 
 			if(hThread != NULL) dasher->threader->threadcount++;
