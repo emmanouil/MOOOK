@@ -1,7 +1,10 @@
+//options
+var WITH_GRADIENT = false;
+
+//vars
 var canvasCtx;
 var yLineMax, yLineMin;
 var new_viz = true;
-var with_gradient = true;
 var counter = 0;
 var Rstack;
 var Lstack;
@@ -27,7 +30,7 @@ function drawViz(e) {
 	canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 	clear();
 
-	if (with_gradient) {
+	if (WITH_GRADIENT) {
 
 		var gradient = canvasCtx.createLinearGradient(0, 0, canvas.width, 0);
 
