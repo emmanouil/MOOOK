@@ -117,5 +117,6 @@ function initReverb(resp) {
 }
 
 function kill_audio() {
-	oscillator.stop();
+	if(!DISABLE_AUDIO)
+		oscillator.stop();
 }
