@@ -24,6 +24,7 @@
 !audio-client/index.html
 !audio-client/script.js
 !audio-client/skel_parser.js
+!audio-client/audio_engine.js
 !audio-client/tools.js
 !audio-client/visuals.js
 
