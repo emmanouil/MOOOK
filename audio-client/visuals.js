@@ -1,5 +1,6 @@
 //options
 var WITH_GRADIENT = false;
+var WITH_PARTICLES = false;
 
 //vars
 var canvasCtx;
@@ -95,10 +96,12 @@ function do_viz(projC) {
 	projC.forEach(function(item, index, array) {
 		if (index == 7) {
 			colour = 'rgba(255,0,0,1)';
-			system.addParticle(2 * item[0], 2 * item[1], index);
+			if(WITH_PARTICLES)
+				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else if (index == 11) {
 			colour = 'rgba(0,255,0,1)';
-			system.addParticle(2 * item[0], 2 * item[1], index);
+			if(WITH_PARTICLES)
+				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else {
 			return;
 		}
