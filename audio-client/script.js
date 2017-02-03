@@ -9,17 +9,19 @@
  *	And appendNextMediaSegment or handleCoordSet is called
  */
 
-
+//options
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
-var mime_codec = 'video/mp4; codecs="avc1.42c01e"';
-var mediaSource = new MediaSource();
-var video, playlist, textTrack, cues;
-var skeleton_worker = new Worker('skel_parser.js');
+const DISABLE_AUDIO = true;
 var withReverb = false;
 var withDistortion = false;
 var withModulation = true;
 var reverbFile = 'concert-crowd2.ogg';
 
+//vars
+var mime_codec = 'video/mp4; codecs="avc1.42c01e"';
+var mediaSource = new MediaSource();
+var video, playlist, textTrack, cues;
+var skeleton_worker = new Worker('skel_parser.js');
 var req_status = -10;
 var segBuffer = 10;
 

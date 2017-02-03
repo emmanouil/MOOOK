@@ -1,5 +1,3 @@
-const DISABLE_AUDIO = true;
-
 // create web audio api context
 var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 
