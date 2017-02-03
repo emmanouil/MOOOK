@@ -61,9 +61,11 @@ function onSourceOpen() {
 	sourceBuffer = mediaSource.addSourceBuffer(mime_codec);
 	sourceBuffer.ms = mediaSource;
 
+	//we assume the first playlist element is the location of the init segment
 	sourceBuffer.addEventListener('updateend', fetch(playlist[0], firstSegment, "arraybuffer"));
 }
 
+//Append the initialization segment.
 function firstSegment() {
 
 	var initSegment = this.response;
@@ -74,12 +76,12 @@ function firstSegment() {
 		return;
 	}
 
-	sourceBuffer.addEventListener('updateend', appendHandler);
+	sourceBuffer.addEventListener('updateend', handleNextPlElement);
 	sourceBuffer.appendBuffer(initSegment);
 }
 
-// Append the initialization segment.
-function appendHandler() {
+//Handle following pl elements
+function handleNextPlElement() {
 	//sourceBuffer.removeEventListener('updateend', appendHandler);
 
 	// Append some initial media data.
@@ -163,7 +165,7 @@ function handleCoordSet(coors) {
 			data: coors
 		})
 		//parse_skeleton(coors);
-	appendHandler();
+	handleNextPlElement();
 }
 
 function start_video() {
