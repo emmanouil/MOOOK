@@ -198,3 +198,10 @@ skeleton_worker.onmessage = function(e) {
 		}
 	}
 }
+
+function kill_skels(){
+		skeleton_worker.postMessage({
+		type: 'kill',
+		data: video.currentTime
+	})
+}

@@ -90,6 +90,8 @@ onmessage = function(e) {
 	} else if (type == 'start') {
 		intervalID = setInterval(check_qeue, 10);
 		startTime = performance.now();
+	}else if (type=='kill'){
+		kill_skels();
 	}
 }
 
@@ -98,9 +100,12 @@ function check_qeue() {
 	var time = performance.now() - startTime;
 
 	if ((typeof skeletons[0] === 'undefined') || (skeletons.length == 1)) {
+		/*	//We do not want to stop anymore when the sklls are over
 		console.log('stopin');
 		send_message('now', 'stop');
-		//clearInterval(intervalID);
+		clearInterval(intervalID);
+		return;
+		*/
 		return;
 	}
 
@@ -132,8 +137,6 @@ function parse_skeleton(skel_set) {
 		skeleton.inSync = false;
 	}
 
-	console.log(skeleton);
-
 	if (skeleton.inSync) {
 		//skeleton_to_cue();
 		skeletons.push(Object.assign({}, skeleton));
@@ -160,4 +163,10 @@ function send_message(msg, _type) {
 		});
 	}
 
+}
+
+function kill_skels(){
+		console.log('stopin');
+		send_message('now', 'stop');
+		clearInterval(intervalID);
 }
