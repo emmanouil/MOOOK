@@ -10,12 +10,13 @@
  */
 
 //options
+const WITH_COORDS_IN_PL = false;	//backwards compatibility - to be removed
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
 const DISABLE_AUDIO = true;
-var withReverb = false;
-var withDistortion = false;
-var withModulation = true;
-var reverbFile = 'concert-crowd2.ogg';
+const withReverb = false;
+const withDistortion = false;
+const withModulation = true;
+const reverbFile = 'concert-crowd2.ogg';
 
 //vars
 var mime_codec = 'video/mp4; codecs="avc1.42c01e"';
