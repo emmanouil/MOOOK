@@ -178,6 +178,7 @@ function start_video() {
 		data: video.currentTime
 	})
 	video.play();
+	video.addEventListener("pause", kill_skels, true);	//TODO temp; remove when live is implemented
 }
 
 //incoming msg from skeleton worker
