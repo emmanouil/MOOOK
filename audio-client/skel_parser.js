@@ -100,7 +100,7 @@ function check_qeue() {
 	if ((typeof skeletons[0] === 'undefined') || (skeletons.length == 1)) {
 		console.log('stopin');
 		send_message('now', 'stop');
-		clearInterval(intervalID);
+		//clearInterval(intervalID);
 		return;
 	}
 
