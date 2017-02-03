@@ -85,14 +85,16 @@ function handleNextPlElement() {
 	//sourceBuffer.removeEventListener('updateend', appendHandler);
 
 	// Append some initial media data.
+	//TODO instead of terminating MSE - poll for new segs
 	if (playlist[1] == null || playlist[1].length < 2) {
 		mediaSource.endOfStream();
-		start_video();
 		return;
 	} else {
 		element = playlist.splice(1, 1).toString();
 		if (element.endsWith('.m4s')) { //we have a segment
 			fetch(element, appendNextMediaSegment, "arraybuffer");
+			if(video.paused)
+				start_video();
 		}else if(element.startsWith("T:")){ //we have a coordinate set file
 			handleCoordSet(element);
 		}else if(element.length<2){
