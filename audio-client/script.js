@@ -10,7 +10,7 @@
  */
 
 //options
-const WITH_COORDS_IN_PL = false;	//backwards compatibility - to be removed
+const WITH_COORDS_IN_PL = true;	//backwards compatibility - to be removed
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
 const DISABLE_AUDIO = true;
 const withReverb = false;
@@ -31,10 +31,10 @@ window.onload = function() {
 	video = document.getElementById('v');
 	mediaSource.video = video;
 	video.ms = mediaSource;
-	fetch_pl();
 	video.src = window.URL.createObjectURL(mediaSource);
-	initMSE();
 	if (withReverb) fetch(reverbFile, initReverb, "arraybuffer");
+	fetch_pl();
+	initMSE();
 }
 
 //MSE-specific functions
@@ -91,8 +91,12 @@ function appendHandler() {
 		element = playlist.splice(1, 1).toString();
 		if (element.endsWith('.m4s')) { //we have a segment
 			fetch(element, appendNextMediaSegment, "arraybuffer");
-		} else { //we have a coordinate set
+		}else if(element.startsWith("T:")){ //we have a coordinate set file
 			handleCoordSet(element);
+		}else if(element.length<2){
+			console.log("possible blank line in playlist - ignoring");
+		}else{
+			console.log("[WARNING] Unknown element in playlist - ignoring");
 		}
 	}
 }
