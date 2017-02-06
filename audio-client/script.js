@@ -86,7 +86,7 @@ function handleNextPlElement() {
 
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
-	if (playlist[1] == null || playlist[1].length < 2) {
+	if (playlist[1] == null) {
 		mediaSource.endOfStream();
 		return;
 	} else {
@@ -99,6 +99,7 @@ function handleNextPlElement() {
 			handleCoordSet(element);
 		}else if(element.length<2){
 			console.log("possible blank line in playlist - ignoring");
+			handleNextPlElement();
 		}else{
 			console.log("[WARNING] Unknown element in playlist - ignoring");
 		}
