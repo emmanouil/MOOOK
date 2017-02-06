@@ -45,6 +45,7 @@ var Skeleton = function() {
 	this.coordsDist = []; //Joint Coords
 	this.coordsProj = []; //Projected Joint Coords
 	this.inSync = false; //The Projected Coords are in sync
+	this.delay = -1;	//Difference between projected and distance coordinates
 };
 
 //Push coords to Skeleton object
