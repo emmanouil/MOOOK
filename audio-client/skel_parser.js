@@ -85,7 +85,11 @@ onmessage = function(e) {
 	var type = e.data.type;
 	var data = e.data.data;
 
-	if (type == 'coords') {
+	if(type == 'coord_f'){	//we have the  contents of a skeleton file
+		for(const skel of data){
+			parse_skeleton(skel);	//TODO check out of time
+		}
+	}else if (type == 'coord_s') {	//we have a skeleton set
 		parse_skeleton(data);
 	} else if (type == 'start') {
 		intervalID = setInterval(check_qeue, 10);

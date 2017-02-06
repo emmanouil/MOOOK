@@ -95,7 +95,9 @@ function handleNextPlElement() {
 			fetch(element, appendNextMediaSegment, "arraybuffer");
 			if(video.paused)
 				start_video();
-		}else if(element.startsWith("T:")){ //we have a coordinate set file
+		}if (element.endsWith('.txt')) { //we have a coordinates file
+			fetch(coord_url+element, parse_CoordFile);
+		}else if(element.startsWith("T:")){ //we have a coordinate set file	DEPRICATED
 			handleCoordSet(element);
 		}else if(element.length<2){
 			console.log("possible blank line in playlist - ignoring");
@@ -108,7 +110,6 @@ function handleNextPlElement() {
 
 
 function appendNextMediaSegment(frag_resp) {
-	console.log('appenting on ' + mediaSource.sourceBuffers[0].buffered.length);
 	console.log(frag_resp.target.response.byteLength);
 	if (mediaSource.readyState == "closed")
 		return;
@@ -161,10 +162,25 @@ function parse_playlist() {
 	req_status = this.status;
 }
 
-function handleCoordSet(coors) {
-	console.log(coors);
+function parse_CoordFile(coordCtx){
+	coords_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
+	req_status = this.status;
+	handleCoordFile(coords_in);
+	handleNextPlElement();
+}
+
+function handleCoordFile(coors) {
 	skeleton_worker.postMessage({
-			type: 'coords',
+			type: 'coord_f',
+			data: coors
+		})
+		//parse_skeleton(coors);
+	handleNextPlElement();
+}
+
+function handleCoordSet(coors) {
+	skeleton_worker.postMessage({
+			type: 'coord_s',
 			data: coors
 		})
 		//parse_skeleton(coors);
