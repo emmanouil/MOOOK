@@ -46,10 +46,12 @@ var Skeleton = function() {
 	this.coordsProj = []; //Projected Joint Coords
 	this.inSync = false; //The Projected Coords are in sync
 	this.delay = -1;	//Difference between projected and distance coordinates
+	this.seg_num = -1;	//respective seg num
+	this.frame_num = -1; //respective (skel) frame num
 };
 
 var Skeletons = function(){
-	this.length = -1;
+	this.len = 0;
 	this.synced = -1;
 	this.maxDelay = -1;
 	this.skeletons = [];
@@ -123,6 +125,8 @@ Skeleton.prototype.create = function(skel_in, time_in, A_in) {
 			break;
 	}
 	Skel.timestamp = time_in;
+	Skel.seg_num = curr_seg;
+	Skel.frame_num = curr_frame;
 	return Skel;
 
 }
