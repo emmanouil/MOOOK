@@ -174,7 +174,7 @@ void generate_projected_coords(skeletalData *in_d){
 	QueryPerformanceCounter(&t1);
 
 	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
-	skelListStream << "T:" << timeref << " A:" << x << ","<< y << ","<< depth;	//position of "center"
+	skelListStream << "T:" << timeref << " SEG:" << in_d->seg_num << " SKN:" << in_d->skel_num << " A:" << x << ","<< y << ","<< depth;	//position of "center"
 
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
 		//write the rest of the projected values as well
@@ -248,7 +248,7 @@ u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 ske
 	timeref = timeref/1000;	//we need it in ms
 //	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
 
-	coordinateStream << "T:" << timeref << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+	coordinateStream << "T:" << timeref << " SEG:" << seg_num << " SKN:" << skel_num << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
 
 
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
