@@ -97,7 +97,7 @@ function handleNextPlElement() {
 			fetch(element, appendNextMediaSegment, "arraybuffer");
 			if(video.paused)
 				start_video();
-		}if (element.endsWith('.txt')) { //we have a coordinates file
+		}else if (element.endsWith('.txt')) { //we have a coordinates file
 			fetch(coord_url+element, parse_CoordFile);
 		}else if(element.startsWith("T:")){ //we have a coordinate set file	DEPRICATED
 			handleCoordSet(element);
@@ -105,7 +105,7 @@ function handleNextPlElement() {
 			console.log("possible blank line in playlist - ignoring");
 			handleNextPlElement();
 		}else{
-			console.log("[WARNING] Unknown element in playlist - ignoring");
+			console.log("[WARNING] Unknown element in playlist - ignoring "+element);
 		}
 	}
 }
