@@ -79,7 +79,7 @@ Skeleton.prototype.push = function(skel_in, isProjected, A) {
 Skeleton.prototype.create = function(skel_in, time_in, A_in) {
 
 	var Skel = new Skeleton();
-		console.log(skel_in.length);
+
 	switch(skel_in.length){
 		//we have dist coords
 		case 20:
@@ -112,8 +112,12 @@ Skeleton.prototype.create = function(skel_in, time_in, A_in) {
 		//We do not know what is what
 		default:
 			console.log("[WARNING] non-recognized skeleton format - aborting");
-			return;
+			break;
 	}
+	Skel.timestamp = time_in;
+	return Skel;
+
+}
 
 }
 
