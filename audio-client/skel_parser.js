@@ -48,6 +48,14 @@ var Skeleton = function() {
 	this.delay = -1;	//Difference between projected and distance coordinates
 };
 
+var Skeletons = function(){
+	this.length = -1;
+	this.synced = -1;
+	this.maxDelay = -1;
+	this.skeletons = [];
+}
+
+//TODO this
 //Push coords to Skeleton object
 //NOTE:	We do not store the Skeletons, as soon as the pair is parsed
 //		and we add the cue, it is lost
@@ -125,7 +133,7 @@ Skeleton.prototype.create = function(skel_in, time_in, A_in) {
 //Current Skeleton
 var skeleton = new Skeleton();
 //unused Skeletons array
-var skeletons = [];
+var skeletons = new Skeletons();
 
 //Entry point - since this is a worker
 onmessage = function(e) {
