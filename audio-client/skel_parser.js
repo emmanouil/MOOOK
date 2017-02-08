@@ -165,10 +165,14 @@ function check_qeue() {
 
 function parse_skeleton(skel_set) {
 
+	if(skel_set.length < 3){
+		return;	//possible blank line
+	}
+
 	var curr_skel = skel_set.split(' ');
 	
-	if(curr_skel.length == 0){
-		console.log("couldn't parse skeleton; exiting");
+	if(!skel_set.startsWith("T:")){
+		console.log("couldn't parse skeleton; skipping set ");
 		return;
 	}
 
