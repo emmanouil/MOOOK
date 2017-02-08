@@ -75,6 +75,48 @@ Skeleton.prototype.push = function(skel_in, isProjected, A) {
 
 };
 
+//Push coords to Skeleton object
+Skeleton.prototype.create = function(skel_in, time_in, A_in) {
+
+	var Skel = new Skeleton();
+		console.log(skel_in.length);
+	switch(skel_in.length){
+		//we have dist coords
+		case 20:
+			Skel.Adist = A_in.map(function(elem){
+				return(parseFloat(elem));
+			});
+			skel_in.forEach(function(item, index, array) {
+				var one, two, three;
+				one = item.split(':')[1];
+				two = one.split(',');
+				three = two.map(function(elem){
+					return(parseFloat(elem));
+				});
+				Skel.coordsDist[index] = three;
+			});
+			break;
+		//we have projected coords
+		case 21:
+			Skel.Aproj = A_in.map(function(elem){
+				return(parseInt(elem));
+			});
+			var tmp = skel_in.splice(20, 1)[0];
+			Skel.delay = parseFloat(tmp.split(':')[1]);
+			skel_in.forEach(function(item, index, array) {
+				Skel.coordsProj[index] = item.split(':')[1].split(',').map(function(elem){
+					return(parseInt(elem));
+				});
+			});
+			break;
+		//We do not know what is what
+		default:
+			console.log("[WARNING] non-recognized skeleton format - aborting");
+			return;
+	}
+
+}
+
 
 //Current Skeleton
 var skeleton = new Skeleton();
