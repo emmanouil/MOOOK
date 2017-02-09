@@ -16,7 +16,6 @@ var seg_url = 'http://localhost:8080/x64/Debug/out/';
 var coord_url = 'http://localhost:8080/';
 const DISABLE_AUDIO = true;
 const withReverb = false;
-const withDistortion = false;
 const withModulation = true;
 const reverbFile = 'concert-crowd2.ogg';
 
@@ -26,7 +25,6 @@ var mediaSource = new MediaSource();
 var video, playlist, textTrack, cues;
 var skeleton_worker = new Worker('skel_parser.js');
 var req_status = -10;
-var segBuffer = 10;
 
 //after window loads do the init
 window.onload = function() {

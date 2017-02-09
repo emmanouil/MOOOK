@@ -25,8 +25,8 @@
 //Sample Example
 /*
 
-T:4542 A:0.0103097,0.092336,2.32413 0:0.0112536,0.2979,2.40354 1:0.0213734,0.36907,2.44919 2:0.0257358,0.752418,2.43409 3:-0.00814651,0.94194,2.32035 4:-0.140039,0.6729,2.50291 5:-0.191736,0.394673,2.5128 6:-0.232179,0.177953,2.41051 7:-0.240909,0.078246,2.36053 8:0.193445,0.661755,2.44184 9:0.296573,0.396263,2.48413 10:0.339128,0.164406,2.35001 11:0.336094,0.0699649,2.31636 12:-0.0666484,0.224374,2.40671 13:-0.143956,-0.329041,2.35673 14:-0.180217,-0.736658,2.39007 15:-0.207889,-0.801028,2.34326 16:0.0850265,0.221579,2.3868 17:0.122709,-0.350963,2.44201 18:0.118881,-0.760212,2.45635 19:0.133839,-0.810782,2.37594
-T:4542 A:161,109,18592 0:161,85,19224 1:162,77,19592 2:163,32,19472 3:159,4,18560 4:144,43,20016 5:138,75,20096 6:132,99,19280 7:131,111,18880 8:183,43,19528 9:194,74,19872 10:201,100,18800 11:201,111,18528 12:152,93,19248 13:143,160,18848 14:138,208,19120 15:135,218,18744 16:170,93,19088 17:174,161,19536 18:174,208,19648 19:176,217,19000
+T:12049 SEG:13 SKN:185 A:-0.0157103,0.0938176,2.31539 0:-0.0115422,0.293589,2.38151 1:-0.0103904,0.361336,2.44192 2:-0.00976931,0.748472,2.43812 3:-0.0231551,0.914085,2.3604 4:-0.177932,0.6536,2.45986 5:-0.240648,0.380506,2.4562 6:-0.262034,0.115684,2.34339 7:-0.24902,0.0389183,2.33563 8:0.167433,0.660565,2.47483 9:0.226306,0.392471,2.4786 10:0.260953,0.180623,2.38429 11:0.262182,0.0833886,2.32662 12:-0.0861892,0.217386,2.36939 13:-0.124604,-0.348835,2.42005 14:-0.144341,-0.748849,2.42879 15:-0.20209,-0.80404,2.34863 16:0.067855,0.216833,2.36917 17:0.0993317,-0.356147,2.42115 18:0.122959,-0.759519,2.45527 19:0.136243,-0.810369,2.38052
+T:12016 SEG:13 SKN:185 A:158,109,18528 0:158,85,19048 1:159,78,19536 2:159,32,19504 3:157,10,18888 4:139,44,19720 5:132,76,19712 6:129,104,18888 7:130,114,18704 8:179,44,19736 9:186,75,19784 10:191,99,19016 11:192,110,18576 12:149,94,18976 13:145,161,19392 14:143,208,19440 15:135,218,18784 16:168,94,18936 17:172,162,19360 18:174,208,19632 19:176,217,19040 D:2075.34
 
 */
 
@@ -139,13 +139,12 @@ function pushDist(skel_in, index){
 	skeletons.skeletons[index].frame_num = skel_in.frame_num;
 	skeletons.skeletons[index].seg_num = skel_in.seg_num;
 	skeletons.len++;
-	//console.log("pushed in "+index)
 }
 
 Skeletons.prototype.push = function(skel_in){
 	
+	//first skel
 	if(skeletons.len==0){
-		console.log("push first skel");
 		pushDist(skel_in, 0);	
 		return true;
 	}
@@ -175,7 +174,7 @@ Skeletons.prototype.push = function(skel_in){
 					console.log("[EVENT] Max delay updated to "+skeletons.maxDelay);
 				}
 				if(!skeletons.skeletons[i].timestamp == skel_in.timestamp){
-					console.log("check this "+(skel_in.timestamp-skeletons.skeletons[i].timestamp));
+					console.log("[WARNING] check this "+(skel_in.timestamp-skeletons.skeletons[i].timestamp));
 				}
 				return true;
 			}
@@ -188,9 +187,6 @@ Skeletons.prototype.push = function(skel_in){
 	return false;
 }
 
-Skeletons.prototype.pop = function(skel_in){
-	
-}
 Skeletons.prototype.seek_position = function(skel_in){
 	
 }
@@ -228,7 +224,6 @@ function check_qeue() {
 
 	if ((typeof skeletons.skeletons[0] === 'undefined') || (skeletons.skeletons.length < 1)) {
 		/*	//We do not want to stop anymore when the sklls are over
-		console.log('stopin');
 		send_message('now', 'stop');
 		clearInterval(intervalID);
 		return;
@@ -255,7 +250,7 @@ function parse_skeleton(skel_set) {
 	var curr_skel = skel_set.split(' ');
 	
 	if(!skel_set.startsWith("T:")){
-		console.log("couldn't parse skeleton; skipping set ");
+		console.log("[ERROR] couldn't parse skeleton; skipping set ");
 		return;
 	}
 
@@ -268,7 +263,7 @@ function parse_skeleton(skel_set) {
 	Skel_in = Skel_in.create(curr_skel, curr_time, curr_A, curr_seg,curr_frame);
 
 	if(Skel_in.timestamp == 0 && Skel_in.delay == -1){
-		console.log("Skeleton couldn't be parsed; skipping set ");
+		console.log("[ERROR] Skeleton couldn't be parsed; skipping set ");
 		return;
 	}
 
