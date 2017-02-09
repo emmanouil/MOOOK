@@ -83,6 +83,11 @@ function drawViz(e) {
 }
 
 function initVizEnv(skel) {
+	if(typeof skel[3] === "undefined"){
+		console.log("[TODO] check this")
+		console.log(skel)
+		return;
+	}
 	var head = skel[3][1];
 	yLineMax = head > 0 ? 2 * head : 0;
 	var kneeAvg = (skel[13][1] + skel[17][1]) / 2;
