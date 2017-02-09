@@ -14,7 +14,7 @@ const WITH_COORDS_IN_PL = true;	//backwards compatibility - to be removed
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
 var seg_url = 'http://localhost:8080/x64/Debug/out/';
 var coord_url = 'http://localhost:8080/';
-const DISABLE_AUDIO = false;
+const DISABLE_AUDIO = true;
 const withReverb = false;
 const withDistortion = false;
 const withModulation = true;
@@ -89,7 +89,7 @@ function handleNextPlElement() {
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
 	if (playlist[1] == null) {
-		mediaSource.endOfStream();
+		//mediaSource.endOfStream();
 		return;
 	} else {
 		element = playlist.splice(1, 1).toString();
@@ -207,7 +207,11 @@ skeleton_worker.onmessage = function(e) {
 
 	if (typeof type === 'undefined') { //we have a skeleton set
 		drawViz(e.data);
-		do_the_audio(e.data);
+		if(!DISABLE_AUDIO){
+			do_the_audio(e.data);
+		}else{
+			is_playing = true;
+		}
 	} else {
 		switch (type) {
 			case 'stop':
