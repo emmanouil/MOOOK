@@ -131,6 +131,68 @@ Skeleton.prototype.create = function(skel_in, time_in, A_in, curr_seg, curr_fram
 
 }
 
+function pushDist(skel_in, index){
+	skeletons.skeletons.splice(index, 0, new Skeleton());
+	skeletons.skeletons[index].timestamp = skel_in.timestamp;
+	skeletons.skeletons[index].Adist = skel_in.Adist;
+	skeletons.skeletons[index].coordsDist = skel_in.coordsDist;
+	skeletons.skeletons[index].frame_num = skel_in.frame_num;
+	skeletons.skeletons[index].seg_num = skel_in.seg_num;
+	skeletons.len++;
+	//console.log("pushed in "+index)
+}
+
+Skeletons.prototype.push = function(skel_in){
+	
+	if(skeletons.len==0){
+		console.log("push first skel");
+		pushDist(skel_in, 0);	
+		return true;
+	}
+
+	if(skel_in.delay == -1){		//we have a dist Skel
+		for(var i = 0; i < skeletons.skeletons.length; i++){
+			if(skel_in.timestamp > skeletons.skeletons[i].timestamp){
+				if(i+1 == skeletons.skeletons.length){
+					pushDist(skel_in, i+1);
+					return true;
+				}else if(skel_in.timestamp < skeletons.skeletons[i+1].timestamp){
+					pushDist(skel_in, i);
+					return true;
+				}
+			}
+		}
+		console.log("[ERROR] Skeleton couldn't be pushed");
+	}else if(skel_in.delay > -1	){	//We have a projected skel
+		for(var i = 0; i < skeletons.skeletons.length; i++){
+			if(skeletons.skeletons[i].frame_num == skel_in.frame_num){
+				skeletons.skeletons[i].coordsProj = skel_in.coordsProj;
+				skeletons.skeletons[i].Aproj = skel_in.Aproj;
+				skeletons.skeletons[i].inSync = true;
+				skeletons.skeletons[i].delay = skel_in.delay;
+				if(skeletons.maxDelay < skel_in.delay){
+					skeletons.maxDelay = skel_in.delay;
+					console.log("[EVENT] Max delay updated to "+skeletons.maxDelay);
+				}
+				if(!skeletons.skeletons[i].timestamp == skel_in.timestamp){
+					console.log("check this "+(skel_in.timestamp-skeletons.skeletons[i].timestamp));
+				}
+				return true;
+			}
+		}
+		console.log("[ERROR] Projected skeleton couldn't be pushed");
+	}else{
+		console.log("[ERROR] Skeleton couldn't be pushed - format unknown");
+	}
+
+	return false;
+}
+
+Skeletons.prototype.pop = function(skel_in){
+	
+}
+Skeletons.prototype.seek_position = function(skel_in){
+	
 }
 
 
@@ -148,6 +210,8 @@ onmessage = function(e) {
 		for(const skel of data){
 			parse_skeleton(skel);	//TODO check out of time
 		}
+		//TODO kill non-synced skells
+		send_message('end', 'update');	//signal end of skeleton parsing
 	}else if (type == 'coord_s') {	//we have a skeleton set
 		parse_skeleton(data);
 	} else if (type == 'start') {
@@ -162,7 +226,7 @@ function check_qeue() {
 
 	var time = performance.now() - startTime;
 
-	if ((typeof skeletons[0] === 'undefined') || (skeletons.length == 1)) {
+	if ((typeof skeletons.skeletons[0] === 'undefined') || (skeletons.skeletons.length < 1)) {
 		/*	//We do not want to stop anymore when the sklls are over
 		console.log('stopin');
 		send_message('now', 'stop');
@@ -172,14 +236,17 @@ function check_qeue() {
 		return;
 	}
 
-	if (time < skeletons[0].timestamp) return;
+	if (time < skeletons.skeletons[0].timestamp) return;
 
-	if (time >= skeletons[0].timestamp && time < skeletons[1].timestamp) {
-		send_message(skeletons.shift());
+	//TODO  if (time >= skeletons.skeletons[0].timestamp && skeletons.skeletons[0].inSync){}
+	if (time >= skeletons.skeletons[0].timestamp) {
+		send_message(skeletons.skeletons.shift());
 	}
 }
 
 function parse_skeleton(skel_set) {
+
+	var res = false;
 
 	if(skel_set.length < 3){
 		return;	//possible blank line
@@ -205,6 +272,9 @@ function parse_skeleton(skel_set) {
 		return;
 	}
 
+	skeletons.push(Skel_in);
+
+/*
 	if (skeleton.timestamp == curr_time) {
 		skeleton.push(curr_skel, true, curr_A);
 		skeleton.inSync = true;
@@ -222,8 +292,10 @@ function parse_skeleton(skel_set) {
 		//		skeletons[skeletons.length-1].AProj = skeleton.AProj.slice();
 		//		skeletons[skeletons.length-1].ADist = skeleton.ADist.slice();
 	}
+	*/
 }
 
+//TODO delete - we are not using cues anymore
 function skeleton_to_cue() {
 	//textTrack.addCue(new TextTrackCue(skeleton.timestamp, skeleton.timestamp+10,skeleton.timestamp));
 	tms = parseInt(skeleton.timestamp) / 1000; //cues are in sec
