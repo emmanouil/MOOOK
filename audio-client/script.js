@@ -64,22 +64,23 @@ function onSourceOpen() {
 	sourceBuffer.ms = mediaSource;
 
 	//we assume the first playlist element is the location of the init segment
-	sourceBuffer.addEventListener('updateend', fetch(playlist[0], firstSegment, "arraybuffer"));
+	sourceBuffer.addEventListener('updateend', fetch(playlist[0], addSegment, "arraybuffer"));
 }
 
 //Append the initialization segment.
-function firstSegment() {
+function addSegment() {
 
-	var initSegment = this.response;
+	var inSegment = this.response;
 
-	if (initSegment == null) {
+	if (inSegment == null) {
 		// Error fetching the initialization segment. Signal end of stream with an error.
+		console.log("[ERROR] endofstream?")
 		mediaSource.endOfStream("network");
 		return;
 	}
 
-	sourceBuffer.addEventListener('updateend', handleNextPlElement);
-	sourceBuffer.appendBuffer(initSegment);
+	sourceBuffer.appendBuffer(inSegment);
+	sourceBuffer.addEventListener('updateend', handleNextPlElement,{once: false});
 }
 
 //Handle following pl elements
