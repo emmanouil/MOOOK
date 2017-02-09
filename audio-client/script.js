@@ -85,22 +85,31 @@ function addSegment() {
 
 //Handle following pl elements
 function handleNextPlElement() {
+	console.log("0")
+//	sourceBuffer.removeEventListener('updateend', handleNextPlElement);
 	//sourceBuffer.removeEventListener('updateend', appendHandler);
 
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
 	if (playlist[1] == null) {
 		//mediaSource.endOfStream();
+		console.log("[ERROR] endofplaylist?")
 		return;
-	} else {
+	} else if(mediaSource.sourceBuffers[0].updating){
+		console.log("1")
+//		sourceBuffer.addEventListener('updateend', handleNextPlElement);
+	}else{
 		element = playlist.splice(1, 1).toString();
 		if (element.endsWith('.m4s')) { //we have a segment
 			fetch(element, appendNextMediaSegment, "arraybuffer");
 			if(video.paused)
 				start_video();
+			console.log("2")
 		}else if (element.endsWith('.txt')) { //we have a coordinates file
+			console.log("3")
 			fetch(coord_url+element, parse_CoordFile);
 		}else if(element.startsWith("T:")){ //we have a coordinate set file	DEPRICATED
+			console.log("[WARNING] Depricated format - Check now!");
 			handleCoordSet(element);
 		}else if(element.length<2){
 			console.log("possible blank line in playlist - ignoring");
@@ -113,9 +122,13 @@ function handleNextPlElement() {
 
 
 function appendNextMediaSegment(frag_resp) {
+console.log("addin")
 	console.log(frag_resp.target.response.byteLength);
-	if (mediaSource.readyState == "closed")
+	console.log(sourceBuffer.updating);
+	if (mediaSource.readyState == "closed"){
+		console.log("[ERROR] closed?")
 		return;
+	}
 	/*
 	    // If we have run out of stream data, then signal end of stream.
 	    if (!HaveMoreMediaSegments()) {
@@ -124,21 +137,26 @@ function appendNextMediaSegment(frag_resp) {
 	    }
 	*/
 	// Make sure the previous append is not still pending.
-	if (mediaSource.sourceBuffers[0].updating)
+	if (mediaSource.sourceBuffers[0].updating){
+		console.log("[WARNING] previous mediaSource update still in progress")
 		return;
+	}
 
 	var mediaSegment = frag_resp.target.response;
 
 	if (!mediaSegment) {
 		// Error fetching the next media segment.
 		//mediaSource.endOfStream("network");
+		console.log("ERROR")
 		return;
 	}
 
 	// NOTE: If mediaSource.readyState == “ended”, this appendBuffer() call will
 	// cause mediaSource.readyState to transition to "open". The web application
 	// should be prepared to handle multiple “sourceopen” events.
+//	mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement);
 	mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
+	console.log("added")
 }
 
 //Content-loading functions
@@ -177,17 +195,7 @@ function handleCoordFile(coors) {
 			type: 'coord_f',
 			data: coors
 		})
-		//parse_skeleton(coors);
-	handleNextPlElement();
-}
-
-function handleCoordSet(coors) {
-	skeleton_worker.postMessage({
-			type: 'coord_s',
-			data: coors
-		})
-		//parse_skeleton(coors);
-	handleNextPlElement();
+	//handleNextPlElement();
 }
 
 function start_video() {
@@ -215,6 +223,15 @@ skeleton_worker.onmessage = function(e) {
 		}
 	} else {
 		switch (type) {
+			case 'update':
+				if(sourceBuffer.updating){
+					console.log("[WARNING] previous")
+//					mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement,{once: false});
+					return;
+				}else{
+					handleNextPlElement();
+				}
+				break;
 			case 'stop':
 				kill_audio();
 				break;
