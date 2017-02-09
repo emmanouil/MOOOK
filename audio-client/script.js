@@ -224,13 +224,14 @@ skeleton_worker.onmessage = function(e) {
 	} else {
 		switch (type) {
 			case 'update':
+			/*
 				if(sourceBuffer.updating){
 					console.log("[WARNING] previous")
-//					mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement,{once: false});
+					mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement,{once: false});
 					return;
-				}else{
-					handleNextPlElement();
 				}
+			*/
+				handleNextPlElement();
 				break;
 			case 'stop':
 				kill_audio();
