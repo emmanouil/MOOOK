@@ -156,18 +156,7 @@ void generate_projected_coords(skeletalData *in_d){
 	float delay;
 	BOOL mut_freed;
 
-//TODOk check from HERE
-
-	printf("generating skel %u \n",in.skel_num);
-
-			if(das->threader != NULL)
-				printf("and it aint null\n");
-			if(!(das->skelFrameCount>0))
-				printf("but the skelly's wrong\n");
-
-//TODOk check to HERE
-
-		// get ticks per second
+	// get ticks per second
 	QueryPerformanceFrequency(&freq);
 
 	// start timer
@@ -226,20 +215,13 @@ void generate_projected_coords(skeletalData *in_d){
 			getchar();
 	}
 
-
-//TODOk check from HERE
-			if(das->threader != NULL)
-				printf("and it aint null\n");
-			if(!(das->skelFrameCount>0))
-				printf("but the skelly's wrong\n");
-//TODOk check to HERE
 }
 
 /*
  * Used for multiple coords per file
  * Called when new coordinate set arrives
  */
-u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
+void push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref, u64 seg_num){
 	
 	NUI_SKELETON_DATA skeleton = skel.SkeletonData[index];
 	LARGE_INTEGER k_frameTimestamp = skel.liTimeStamp;
@@ -270,8 +252,7 @@ u64 push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 ske
 	}
 	coordinateStream << "\n" ;
 
-	skel_num++;
-	return skel_num;
+	return;
 }
 
 bool flush_skeleton_coordinates(u64 seg_num){

@@ -550,9 +550,8 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 
         if (NUI_SKELETON_TRACKED == trackingState)
         {
-			//dasher->skelFrameCount = write_playlist_skeleton(skeletonFrame, i, dasher->skelFrameCount, timeref);
-			dasher->skelFrameCount = push_skeleton_coordinates(skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
 
+			push_skeleton_coordinates(skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
 
 			skeletonToThread.skel =skeletonFrame;
 			skeletonToThread.index = i;
@@ -566,7 +565,7 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 			printf("sendin'  %d %u %u %u \n",skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
 			if(dasher->threader != NULL)
 				printf("and it aint null\n");
-			if(!(dasher->skelFrameCount>0))
+			if(!(dasher->skelFrameCount>=0))
 				printf("but the skelly's wrong\n");
 
 			/*
@@ -582,6 +581,9 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 			HANDLE hThread = CreateThread(0,0, (LPTHREAD_START_ROUTINE) generate_projected_coords, &skeletonToThread,0,&threadId);
 
 			if(hThread != NULL) dasher->threader->threadcount++;
+
+			//Increase skeleton frame count
+			dasher->skelFrameCount++;
 
 			printf("\n tracked %d, %d \n", skeletonFrame.SkeletonData[i].dwTrackingID, i);
 			return;	//we assume only one skeleton
