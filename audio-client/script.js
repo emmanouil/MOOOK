@@ -84,8 +84,6 @@ function addSegment() {
 //Handle following pl elements
 function handleNextPlElement() {
 	console.log("0")
-//	sourceBuffer.removeEventListener('updateend', handleNextPlElement);
-	//sourceBuffer.removeEventListener('updateend', appendHandler);
 
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
@@ -106,6 +104,8 @@ function handleNextPlElement() {
 		}else if (element.endsWith('.txt')) { //we have a coordinates file
 			console.log("3")
 			fetch(coord_url+element, parse_CoordFile);
+			//moved to be triggered by message from the worker
+			//handleNextPlElement();
 		}else if(element.startsWith("T:")){ //we have a coordinate set file	DEPRICATED
 			console.log("[WARNING] Depricated format - Check now!");
 			handleCoordSet(element);
@@ -145,7 +145,7 @@ console.log("addin")
 	if (!mediaSegment) {
 		// Error fetching the next media segment.
 		//mediaSource.endOfStream("network");
-		console.log("ERROR")
+		console.log("[ERROR] media segment not found");
 		return;
 	}
 
@@ -185,7 +185,6 @@ function parse_CoordFile(coordCtx){
 	coords_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
 	req_status = this.status;
 	handleCoordFile(coords_in);
-	handleNextPlElement();
 }
 
 function handleCoordFile(coors) {
@@ -193,7 +192,6 @@ function handleCoordFile(coors) {
 			type: 'coord_f',
 			data: coors
 		})
-	//handleNextPlElement();
 }
 
 function start_video() {
