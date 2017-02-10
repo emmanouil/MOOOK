@@ -210,7 +210,7 @@ void CColorBasics::Update(DASHout* dasher, DWORD event_res)
 		if(res==1){
 			res = muxer_close_segment(dasher);
 			if(res==GF_OK){
-				dasher->seg_num = write_playlist_segment(dasher->seg_num, timeref);
+				write_playlist_segment(dasher->seg_num, timeref);
 			}
 			if(dasher->skelFrameCount>0){
 				printf("\n\n FLUSHING \n\n");	//TODOk remove
@@ -219,6 +219,7 @@ void CColorBasics::Update(DASHout* dasher, DWORD event_res)
 					printf("\n\n\n\nFLUSHING ERROR\n\n");
 				}
 			}
+			dasher->seg_num++;
 		}
 
 		dasher->nextColourFrame = NULL;

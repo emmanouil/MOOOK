@@ -97,7 +97,7 @@ Threader* init_threader(void){
 }
 
 
-u64 write_playlist_segment(u64 seg_num, u64 timeref){
+void write_playlist_segment(u64 seg_num, u64 timeref){
 	tmp = vidListStream.str();
 	vidListStream.seekp(0);
 	vidListStream << "\n\t\t{ \n\t\t\"Open_segment_time\":" << "\"" << timeref << "\",";
@@ -130,8 +130,8 @@ u64 write_playlist_segment(u64 seg_num, u64 timeref){
 	}
 	playlistFile.close();
 
-	seg_num++;
-	return seg_num;
+//	moved to ColorBasics (needed for skels as well)
+//	seg_num++;
 
 }
 

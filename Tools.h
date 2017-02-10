@@ -50,8 +50,7 @@ void init_playlist();
 
 Threader *init_threader();
 
-// returns new segment number
-u64 write_playlist_segment(u64 seg_num, u64 timeref);
+void write_playlist_segment(u64 seg_num, u64 timeref);
 
 u64 write_playlist_skeleton(const NUI_SKELETON_FRAME &skel, int index, u64 skel_num, u64 timeref);
 
