@@ -5,7 +5,7 @@ var http = require("http"),
     url = require("url"),
     path = require("path"),
     fs = require("fs"),
-    port = process.argv[2] || 8000;
+    port = process.argv[2] || 8080;
 //options
 var LOOK_FOR_INDEX = false;	//if url is a dir, try to load index.html in this dir
 

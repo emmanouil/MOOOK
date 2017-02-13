@@ -11,9 +11,10 @@
 
 //options
 const WITH_COORDS_IN_PL = true;	//backwards compatibility - to be removed
+var port = '8080';
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
-var seg_url = 'http://localhost:8080/x64/Debug/out/';
-var coord_url = 'http://localhost:8080/';
+var seg_url = 'http://localhost:'+port+'/x64/Debug/out/';
+var coord_url = 'http://localhost:'+port+'/';
 const DISABLE_AUDIO = true;
 const withReverb = false;
 const withModulation = true;
