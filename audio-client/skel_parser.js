@@ -39,11 +39,12 @@ var intervalID, startTime;
 
 //Skeleton object
 var Skeleton = function() {
-	this.timestamp = 0; //we also use it as ID
+	this.timestamp = 0; //we also use it as ID	[TODO: switch id to frame_num]
 	this.Adist = 0; //Centre Coord
 	this.Aproj = 0; //Projected Centre Coord
 	this.coordsDist = []; //Joint Coords
 	this.coordsProj = []; //Projected Joint Coords
+	this.coordsProjDel = []; //Projected Joint Coords
 	this.inSync = false; //The Projected Coords are in sync
 	this.delay = -1;	//Difference between projected and distance coordinates
 	this.seg_num = -1;	//respective seg num
@@ -87,7 +88,7 @@ Skeleton.prototype.push = function(skel_in, isProjected, A) {
 };
 
 //Push coords to Skeleton object
-Skeleton.prototype.create = function(skel_in, time_in, A_in, curr_seg, curr_skn, curr_frame) {
+Skeleton.prototype.create = function(skel_in, type, time_in, A_in, curr_seg, curr_skn, curr_frame) {
 
 	var Skel = new Skeleton();
 
@@ -251,11 +252,12 @@ function parse_skeleton(skel_set) {
 
 	var curr_skel = skel_set.split(' ');
 	
-	if(!skel_set.startsWith("T:")){
+	if(!skel_set.startsWith("TYPE:")){
 		console.log("[ERROR] couldn't parse skeleton; skipping set ");
 		return;
 	}
 
+	var type = (curr_skel.shift().split(':')[1]).toString();
 	var curr_time = parseInt(curr_skel.shift().split(':')[1]);
 	var curr_seg = parseInt(curr_skel.shift().split(':')[1]);
 	var curr_skn = parseInt(curr_skel.shift().split(':')[1]);
@@ -263,7 +265,7 @@ function parse_skeleton(skel_set) {
 	var curr_A = curr_skel.shift().split(':')[1].split(',');
 	
 	var Skel_in = new Skeleton();
-	Skel_in = Skel_in.create(curr_skel, curr_time, curr_A, curr_seg, curr_skn, curr_frame);
+	Skel_in = Skel_in.create(curr_skel, type, curr_time, curr_A, curr_seg, curr_skn, curr_frame);
 
 	if(Skel_in.timestamp == 0 && Skel_in.delay == -1){
 		console.log("[ERROR] Skeleton couldn't be parsed; skipping set ");
