@@ -580,7 +580,7 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 
 			HANDLE hThread = CreateThread(0,0, (LPTHREAD_START_ROUTINE) generate_projected_coords, &skeletonToThread,0,&threadId);
 
-			if(hThread != NULL) dasher->threader->threadcount++;
+			//if(hThread != NULL) dasher->threader->threadcount++;
 
 			//Increase skeleton frame count
 			dasher->skelFrameCount++;

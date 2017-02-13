@@ -78,7 +78,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	dasher->threader = init_threader();
 	if(!dasher){
 		return 1;
-	}	
+	}
+	if(!dasher->threader){
+		return 1;
+	}
 
 	application.setDasher(dasher);
 
