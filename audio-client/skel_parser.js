@@ -47,7 +47,8 @@ var Skeleton = function() {
 	this.inSync = false; //The Projected Coords are in sync
 	this.delay = -1;	//Difference between projected and distance coordinates
 	this.seg_num = -1;	//respective seg num
-	this.frame_num = -1; //respective (skel) frame num
+	this.sk_num = -1; //respective skel num (incremental)
+	this.frame_num = -1; //respective (skel) frame num (by firmware)
 };
 
 var Skeletons = function(){
@@ -86,7 +87,7 @@ Skeleton.prototype.push = function(skel_in, isProjected, A) {
 };
 
 //Push coords to Skeleton object
-Skeleton.prototype.create = function(skel_in, time_in, A_in, curr_seg, curr_frame) {
+Skeleton.prototype.create = function(skel_in, time_in, A_in, curr_seg, curr_skn, curr_frame) {
 
 	var Skel = new Skeleton();
 
@@ -126,6 +127,7 @@ Skeleton.prototype.create = function(skel_in, time_in, A_in, curr_seg, curr_fram
 	}
 	Skel.timestamp = time_in;
 	Skel.seg_num = curr_seg;
+	Skel.sk_num = curr_skn
 	Skel.frame_num = curr_frame;
 	return Skel;
 
@@ -256,11 +258,12 @@ function parse_skeleton(skel_set) {
 
 	var curr_time = parseInt(curr_skel.shift().split(':')[1]);
 	var curr_seg = parseInt(curr_skel.shift().split(':')[1]);
+	var curr_skn = parseInt(curr_skel.shift().split(':')[1]);
 	var curr_frame = parseInt(curr_skel.shift().split(':')[1]);
 	var curr_A = curr_skel.shift().split(':')[1].split(',');
 	
 	var Skel_in = new Skeleton();
-	Skel_in = Skel_in.create(curr_skel, curr_time, curr_A, curr_seg,curr_frame);
+	Skel_in = Skel_in.create(curr_skel, curr_time, curr_A, curr_seg, curr_skn, curr_frame);
 
 	if(Skel_in.timestamp == 0 && Skel_in.delay == -1){
 		console.log("[ERROR] Skeleton couldn't be parsed; skipping set ");
