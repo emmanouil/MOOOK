@@ -559,11 +559,11 @@ void CColorBasics::ProcessSkeleton(DASHout* dasher, u64 timeref){
 			skeletonToThread.timeref = timeref;
 			skeletonToThread.seg_num = dasher->seg_num;
 			skeletonToThread.dasher = dasher;
-			skeletonToThread.threader = dasher->threader;
+			skeletonToThread.threader = (Threader *) dasher->threader;
 
 			//TODOk check from HERE
 			printf("sendin'  %d %u %u %u \n",skeletonFrame, i, dasher->skelFrameCount, timeref, dasher->seg_num);
-			if(dasher->threader != NULL)
+			if(dasher->threader == NULL)
 				printf("and it aint null\n");
 			if(!(dasher->skelFrameCount>=0))
 				printf("but the skelly's wrong\n");
