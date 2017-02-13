@@ -21,6 +21,7 @@ std::ofstream vidPlaylist;
 std::ofstream playlistFile;
 std::ofstream coordinateFile;
 
+std::stringstream projected_skels;
 std::stringstream proccessed_skels;
 
 std::stringstream errlog;
@@ -146,7 +147,7 @@ void generate_projected_coords(skeletalData *in_d){
 	Threader *thr = in_d->threader;
 	DASHout *das = in_d->dasher;
 
-	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
+	std::ostringstream skelListStream, coords, tmp;	//this is used only for the projected join coordinates
 	NUI_SKELETON_DATA skeleton = in.skel.SkeletonData[in.index];
 	u64 timeref = in.timeref/1000;	//we need it in ms
 	//vars for holding the projected joint coordinates of the centre point
@@ -163,16 +164,18 @@ void generate_projected_coords(skeletalData *in_d){
 	QueryPerformanceCounter(&t1);
 
 	NuiTransformSkeletonToDepthImage(skeleton.Position, &x, &y, &depth);
-	skelListStream << "T:" << timeref << " SEG:" << in_d->seg_num << " SKN:" << in_d->skel_num << " FRN:" << in.skel.dwFrameNumber << " A:" << x << ","<< y << ","<< depth;	//position of "center"
+	coords << " SEG:" << in_d->seg_num << " SKN:" << in_d->skel_num << " FRN:" << in.skel.dwFrameNumber << " A:" << x << ","<< y << ","<< depth;	//position of "center"
 
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
 		//write the rest of the projected values as well
-		skelListStream << " " << i << ":";
+		coords << " " << i << ":";
 		if(skeleton.eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED){
 			NuiTransformSkeletonToDepthImage(skeleton.SkeletonPositions[i], &x, &y, &depth);
-			skelListStream << x << "," << y << "," << depth;
+			coords << x << "," << y << "," << depth;
 		}
 	}
+
+	coordinateStream << "\n" << "TYPE:PROJ " << "T:" << timeref << coords.str() <<"\n \n";
 
 	//sleep (simulate processing)
 	random_device rd;
@@ -186,10 +189,10 @@ void generate_projected_coords(skeletalData *in_d){
 	delay = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;	//in ms
 
 	//write to stream
-	skelListStream << " " << "D:" << delay << "\n \n";
+	skelListStream << "TYPE:DELA " << "T:" << timeref+delay << coords.str() << " " << "D:" << delay << "\n \n";
 
 	//count
-	thr->threadcount--;
+	//((Threader *) in_d->threader)->threadcount--;
 
 	//acquire mutex
 	
@@ -215,6 +218,9 @@ void generate_projected_coords(skeletalData *in_d){
 			getchar();
 	}
 
+	tmp.clear();
+	coords.clear();
+	skelListStream.clear();
 }
 
 /*
@@ -230,7 +236,7 @@ void push_skeleton_coordinates(const NUI_SKELETON_FRAME &skel, int index, u64 sk
 	timeref = timeref/1000;	//we need it in ms
 //	std::ostringstream skelListStream;	//this is used only for the projected join coordinates
 
-	coordinateStream << "T:" << timeref << " SEG:" << seg_num << " SKN:" << skel_num << " FRN:" << skel.dwFrameNumber << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
+	coordinateStream << "TYPE:ORIG " << "T:" << timeref << " SEG:" << seg_num << " SKN:" << skel_num << " FRN:" << skel.dwFrameNumber << " A:" << skeleton.Position.x << ","<< skeleton.Position.y << ","<< skeleton.Position.z;	//position of "center"
 
 
 	for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i){
