@@ -280,26 +280,14 @@ function parse_skeleton(skel_set) {
 	}
 
 	skeletons.push(Skel_in);
-
-/*
-	if (skeleton.timestamp == curr_time) {
-		skeleton.push(curr_skel, true, curr_A);
-		skeleton.inSync = true;
-	} else {
-		skeleton.push(curr_skel, false, curr_A);
-		skeleton.timestamp = curr_time;
-		skeleton.inSync = false;
+	if(type === 'DELA'){
+		skelsDel.push(Skel_in);
+	}else if(type === 'PROJ'){
+		skelsProj.push(Skel_in);
+	}else{	//type ORIG
+		skelsDist.push(Skel_in);
 	}
-
-	if (skeleton.inSync) {
-		//skeleton_to_cue();
-		skeletons.push(Object.assign({}, skeleton));
-		skeletons[skeletons.length - 1].coordsDist = skeleton.coordsDist.slice();
-		skeletons[skeletons.length - 1].coordsProj = skeleton.coordsProj.slice();
-		//		skeletons[skeletons.length-1].AProj = skeleton.AProj.slice();
-		//		skeletons[skeletons.length-1].ADist = skeleton.ADist.slice();
-	}
-	*/
+	
 }
 
 //TODO delete - we are not using cues anymore
