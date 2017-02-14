@@ -96,9 +96,7 @@ Skeleton.prototype.create = function(skel_in, type, time_in, A_in, curr_seg, cur
 
 	var Skel = new Skeleton();
 
-	switch(skel_in.length){
-		//we have dist coords
-		case 20:
+		if(type==="ORIG"){
 			Skel.Adist = A_in.map(function(elem){
 				return(parseFloat(elem));
 			});
@@ -111,9 +109,7 @@ Skeleton.prototype.create = function(skel_in, type, time_in, A_in, curr_seg, cur
 				});
 				Skel.coordsDist[index] = three;
 			});
-			break;
-		//we have projected coords
-		case 21:
+		}else if(type ==="DELA"){
 			Skel.Aproj = A_in.map(function(elem){
 				return(parseInt(elem));
 			});
@@ -124,12 +120,20 @@ Skeleton.prototype.create = function(skel_in, type, time_in, A_in, curr_seg, cur
 					return(parseInt(elem));
 				});
 			});
-			break;
-		//We do not know what is what
-		default:
+		}else if(type === "PROJ"){
+			Skel.Aproj = A_in.map(function(elem){
+				return(parseInt(elem));
+			});
+			skel_in.forEach(function(item, index, array) {
+				Skel.coordsProj[index] = item.split(':')[1].split(',').map(function(elem){
+					return(parseInt(elem));
+				});
+			});
+		}else{
 			console.log("[WARNING] non-recognized skeleton format - aborting");
-			break;
-	}
+			return null;
+		}
+
 	Skel.timestamp = time_in;
 	Skel.seg_num = curr_seg;
 	Skel.sk_num = curr_skn
