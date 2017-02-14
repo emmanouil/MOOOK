@@ -26,7 +26,7 @@ function setup() {
 	return;
 }
 
-function drawViz(e) {
+function drawViz(e, skel_type) {
 	if(typeof e.coordsProj === 'undefined'){
 		e = e.data;
 	}
@@ -58,7 +58,7 @@ function drawViz(e) {
 
 	if (new_viz) {
 		if (counter < 10) counter++;
-		do_viz(projC);
+		do_viz(projC, skel_type);
 		if (!is_playing) { //we received the first skeleton coords
 			initVizEnv(projC);
 		}
@@ -98,7 +98,7 @@ function initVizEnv(skel) {
 
 }
 
-function do_viz(projC) {
+function do_viz(projC, skel_type) {
 	//system.addParticle();
 
 	projC.forEach(function(item, index, array) {
@@ -117,7 +117,11 @@ function do_viz(projC) {
 		radius = map(projC[index][1], yLineMin, yLineMax, 1, 25);
 
 		canvasCtx.beginPath();
-		canvasCtx.fillStyle = 'rgb(255,255,255)';
+		if(skel_type === 'proj'){
+			canvasCtx.fillStyle = 'rgb(255,255,255)';
+		}else if(skel_type === 'del'){
+			canvasCtx.fillStyle = 'rgb(255,0,0)';
+		}
 		canvasCtx.arc(2 * item[0], 2 * item[1], 10, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
 		canvasCtx.fill();
 		canvasCtx.closePath();

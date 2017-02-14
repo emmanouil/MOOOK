@@ -219,9 +219,9 @@ skeleton_worker.onmessage = function(e) {
 			is_playing = true;
 		}
 	} else if(type === 'skel_proj'){	//we have a projected coord
-		drawViz(e.data);
+		drawViz(e.data, 'proj');
 	}else if(type === 'skel_del'){
-
+		drawViz(e.data, 'del');
 	}else{ //we have a proccessed
 		switch (type) {
 			case 'update':
