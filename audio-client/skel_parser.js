@@ -33,7 +33,7 @@ TYPE:DELA T:23136.3 SEG:22 SKN:446 FRN:535468 A:171,88,19184 0:172,79,20112 1:17
 
 */
 
-
+const CHECK_QEUE_INTERVAL = 30;	//in ms
 
 var last_timestamp = 0; //global variable holding last skeleton set timestamp
 var last_A_dist; //global variable holding last skeleton set center coords
@@ -225,7 +225,7 @@ onmessage = function(e) {
 	}else if (type == 'coord_s') {	//we have a skeleton set
 		parse_skeleton(data);
 	} else if (type == 'start') {
-		intervalID = setInterval(check_qeue, 10);
+		intervalID = setInterval(check_qeue, CHECK_QEUE_INTERVAL);
 		startTime = performance.now();
 	}else if (type=='kill'){
 		kill_skels();
