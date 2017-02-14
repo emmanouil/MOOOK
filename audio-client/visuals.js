@@ -10,8 +10,8 @@ var counter = 0;
 var Rstack;
 var Lstack;
 
-var lastDrawnDel = [[0, 0],[0, 0]];
-var lastDrawnProj = [[0, 0],[0, 0]];
+var lastDrawnDel = [[0, 0], [0, 0]];
+var lastDrawnProj = [[0, 0], [0, 0]];
 
 function canvasInit() {
 	setup();
@@ -30,11 +30,11 @@ function setup() {
 }
 
 function drawViz(e, skel_type) {
-	if(typeof e.coordsProj === 'undefined'){
+	if (typeof e.coordsProj === 'undefined') {
 		e = e.data;
 	}
 	var projC = e.coordsProj;
-	canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
 	clear();
 
 	if (WITH_GRADIENT) {
@@ -74,7 +74,7 @@ function drawViz(e, skel_type) {
 		initVizEnv(projC);
 	}
 
-	projC.forEach(function(item, index, array) {
+	projC.forEach(function (item, index, array) {
 		canvasCtx.beginPath();
 		canvasCtx.fillStyle = 'rgb(255,0,0)';
 		canvasCtx.arc(2 * item[0], 2 * item[1], 5, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
@@ -89,7 +89,7 @@ function drawViz(e, skel_type) {
 }
 
 function initVizEnv(skel) {
-	if(typeof skel[3] === "undefined"){
+	if (typeof skel[3] === "undefined") {
 		console.log("[TODO] check this")
 		console.log(skel)
 		return;
@@ -104,14 +104,16 @@ function initVizEnv(skel) {
 function do_viz(projC, skel_type) {
 	//system.addParticle();
 	var slot = -1;	//0 -> LHand (index 7) 1 -> RHand (index 11)
-	projC.forEach(function(item, index, array) {
+
+	projC.forEach(function (item, index, array) {
 		if (index == 7) {
+			canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 			slot = 0;
-			if(WITH_PARTICLES)
+			if (WITH_PARTICLES)
 				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else if (index == 11) {
 			slot = 1;
-			if(WITH_PARTICLES)
+			if (WITH_PARTICLES)
 				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else {
 			return;
@@ -119,17 +121,18 @@ function do_viz(projC, skel_type) {
 
 		//var radius = map(projC[index][1], yLineMin, yLineMax, 1, 25);
 
-		if(skel_type === 'proj'){
+		if (skel_type === 'proj') {
 			lastDrawnProj[slot][0] = 2 * item[0];
 			lastDrawnProj[slot][1] = 2 * item[1];
-		}else if(skel_type === 'del'){
+		} else if (skel_type === 'del') {
 			lastDrawnDel[slot][0] = 2 * item[0];
 			lastDrawnDel[slot][1] = 2 * item[1];
-		}else{
+		} else {
 			console.log("[ERROR] drawing error");
 			return;
 		}
 		console.log(skel_type)
+
 		drawArc(lastDrawnProj[slot], 'rgb(255,255,255)');
 		drawArc(lastDrawnDel[slot], 'rgb(255,0,0)');
 	});
@@ -137,7 +140,7 @@ function do_viz(projC, skel_type) {
 	system.run();
 }
 
-function drawArc(xy, colour){
+function drawArc(xy, colour) {
 	canvasCtx.beginPath();
 	canvasCtx.fillStyle = colour;
 	canvasCtx.arc(xy[0], xy[1], 10, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
@@ -145,7 +148,7 @@ function drawArc(xy, colour){
 	canvasCtx.closePath();
 }
 
-var Particle = function(position, x, y, number) {
+var Particle = function (position, x, y, number) {
 	this.acceleration = createVector(0, 0.05);
 	this.velocity = createVector(random(-1, 1), random(-1, 0));
 	if (typeof x === 'undefined') {
@@ -158,20 +161,20 @@ var Particle = function(position, x, y, number) {
 	this.lifespan = 120.0;
 };
 
-Particle.prototype.run = function() {
+Particle.prototype.run = function () {
 	this.update();
 	this.display();
 };
 
 // Method to update position
-Particle.prototype.update = function() {
+Particle.prototype.update = function () {
 	this.velocity.add(this.acceleration);
 	this.position.add(this.velocity);
 	this.lifespan -= 2;
 };
 
 // Method to display
-Particle.prototype.display = function() {
+Particle.prototype.display = function () {
 	stroke(200, this.lifespan * 2);
 	strokeWeight(2);
 	if (this.number > 0) {
@@ -187,7 +190,7 @@ Particle.prototype.display = function() {
 };
 
 // Is the particle still useful?
-Particle.prototype.isDead = function() {
+Particle.prototype.isDead = function () {
 	if (this.lifespan < 0) {
 		return true;
 	} else {
@@ -195,16 +198,16 @@ Particle.prototype.isDead = function() {
 	}
 };
 
-var ParticleSystem = function(position) {
+var ParticleSystem = function (position) {
 	//this.origin = position.copy();
 	this.particles = [];
 };
 
-ParticleSystem.prototype.addParticle = function(x, y, number) {
+ParticleSystem.prototype.addParticle = function (x, y, number) {
 	this.particles.push(new Particle(this.origin, x, y, number));
 };
 
-ParticleSystem.prototype.run = function() {
+ParticleSystem.prototype.run = function () {
 	for (var i = this.particles.length - 1; i >= 0; i--) {
 		var p = this.particles[i];
 		p.run();
