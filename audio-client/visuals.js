@@ -10,6 +10,9 @@ var counter = 0;
 var Rstack;
 var Lstack;
 
+var lastDrawnDel = [[0, 0],[0, 0]];
+var lastDrawnProj = [[0, 0],[0, 0]];
+
 function canvasInit() {
 	setup();
 	canvas = document.querySelector('.canvas');
@@ -100,36 +103,46 @@ function initVizEnv(skel) {
 
 function do_viz(projC, skel_type) {
 	//system.addParticle();
-
+	var slot = -1;	//0 -> LHand (index 7) 1 -> RHand (index 11)
 	projC.forEach(function(item, index, array) {
 		if (index == 7) {
-			colour = 'rgba(255,0,0,1)';
+			slot = 0;
 			if(WITH_PARTICLES)
 				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else if (index == 11) {
-			colour = 'rgba(0,255,0,1)';
+			slot = 1;
 			if(WITH_PARTICLES)
 				system.addParticle(2 * item[0], 2 * item[1], index);
 		} else {
 			return;
 		}
 
-		radius = map(projC[index][1], yLineMin, yLineMax, 1, 25);
+		//var radius = map(projC[index][1], yLineMin, yLineMax, 1, 25);
 
-		canvasCtx.beginPath();
 		if(skel_type === 'proj'){
-			canvasCtx.fillStyle = 'rgb(255,255,255)';
+			lastDrawnProj[slot][0] = 2 * item[0];
+			lastDrawnProj[slot][1] = 2 * item[1];
 		}else if(skel_type === 'del'){
-			canvasCtx.fillStyle = 'rgb(255,0,0)';
+			lastDrawnDel[slot][0] = 2 * item[0];
+			lastDrawnDel[slot][1] = 2 * item[1];
+		}else{
+			console.log("[ERROR] drawing error");
+			return;
 		}
-		canvasCtx.arc(2 * item[0], 2 * item[1], 10, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
-		canvasCtx.fill();
-		canvasCtx.closePath();
-
-
-
+		console.log(skel_type)
+		drawArc(lastDrawnProj[slot], 'rgb(255,255,255)');
+		drawArc(lastDrawnDel[slot], 'rgb(255,0,0)');
 	});
+
 	system.run();
+}
+
+function drawArc(xy, colour){
+	canvasCtx.beginPath();
+	canvasCtx.fillStyle = colour;
+	canvasCtx.arc(xy[0], xy[1], 10, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
+	canvasCtx.fill();
+	canvasCtx.closePath();
 }
 
 var Particle = function(position, x, y, number) {
