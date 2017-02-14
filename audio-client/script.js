@@ -211,14 +211,18 @@ skeleton_worker.onmessage = function(e) {
 	var type = e.data.type;
 	var data = e.data.data;
 
-	if (typeof type === 'undefined') { //we have a skeleton set
+	if (typeof type === 'undefined') { //we have a (old) skeleton set
 		drawViz(e.data);
 		if(!DISABLE_AUDIO){
 			do_the_audio(e.data);
 		}else{
 			is_playing = true;
 		}
-	} else {
+	} else if(type === 'skel_proj'){	//we have a projected coord
+		drawViz(e.data);
+	}else if(type === 'skel_del'){
+
+	}else{ //we have a proccessed
 		switch (type) {
 			case 'update':
 			/*
@@ -234,7 +238,7 @@ skeleton_worker.onmessage = function(e) {
 				kill_audio();
 				break;
 			default:
-				console.log("NOTE: unwanted");
+				console.log("NOTE: unwanted, of type: "+type);
 		}
 	}
 }

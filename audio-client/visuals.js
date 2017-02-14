@@ -27,6 +27,9 @@ function setup() {
 }
 
 function drawViz(e) {
+	if(typeof e.coordsProj === 'undefined'){
+		e = e.data;
+	}
 	var projC = e.coordsProj;
 	canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 	clear();

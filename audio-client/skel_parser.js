@@ -36,6 +36,7 @@ var last_timestamp = 0; //global variable holding last skeleton set timestamp
 var last_A_dist; //global variable holding last skeleton set center coords
 var last_A_proj; //global variable holding last skeleton set screen projection center coords
 var intervalID, startTime;
+var skelOutProjIndex, skelOutDelIndex = 0;
 
 //Skeleton object
 var Skeleton = function() {
@@ -241,7 +242,7 @@ function check_qeue() {
 
 	//TODO  if (time >= skeletons.skeletons[0].timestamp && skeletons.skeletons[0].inSync){}
 	if (time >= skeletons.skeletons[0].timestamp) {
-		send_message(skeletons.skeletons.shift());
+		send_message(skeletons.skeletons.shift(), 'skel_proj');
 	}
 }
 
