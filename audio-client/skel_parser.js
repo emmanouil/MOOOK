@@ -164,7 +164,10 @@ Skeletons.prototype.push = function(skel_in){
 				}
 			}
 		}
-		console.log("[ERROR] Skeleton couldn't be pushed");
+		//TODO we should need the framecheck condition
+		if(skel_in.frame_num != skeletons.skeletons[skeletons.skeletons.length-1].frame_num){
+			console.log("[ERROR] Skeleton couldn't be pushed");
+		}
 	}else if(skel_in.delay > -1	){	//We have a projected skel
 		for(var i = 0; i < skeletons.skeletons.length; i++){
 			if(skeletons.skeletons[i].frame_num == skel_in.frame_num){
