@@ -47,7 +47,22 @@ http.createServer(function (request, response) {
   });
 }).listen(parseInt(port, 10));
 
-console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");/**
+console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
+
+
+
+/**
+ * @description Sends the playlist ( {plText} ) as a response
+ * @param {response} The response object
+ */
+function pl_send(response){
+  console.log(plText);
+  response.writeHead(200);
+  response.write(plText);
+  response.end();
+}
+
+/**
  * @description Apends {num} entries to the playlist to be send
  * @param {num} (optional) default: 1
  * @return The updated playlist text
