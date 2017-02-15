@@ -1,19 +1,39 @@
 //Test server script for Node.js
 "use strict";
+
 //modules
 var http = require("http"),
   url = require("url"),
   path = require("path"),
   fs = require("fs"),
   port = process.argv[2] || 8080;
+var tools = require('./tools.js');
+
 //options
 var LOOK_FOR_INDEX = true;	//if url is a dir, try to load index.html in this dir
+
+//variables
+var pl_parsed = false;
+var plArray = [];   //playlist elements in Array format
+var plText ='';         //actual playlist to be constructed and send
 
 http.createServer(function (request, response) {
 
   var uri = url.parse(request.url).pathname;
   var filename = path.join(process.cwd(), uri);
   var file = uri.toString().split('/').pop();
+
+  if(file === 'playlist.m3u8'){
+    if(pl_parsed){
+      pl_send(response);
+    }else{
+      plArray = tools.pl_parse(filename);
+      pl_update(2);
+      pl_parsed = true;
+      pl_send(response);
+      return;
+    }
+  }
 
   fs.exists(filename, function (exists) {
     if (!exists) {
