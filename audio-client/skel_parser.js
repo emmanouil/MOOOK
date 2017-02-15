@@ -39,7 +39,13 @@ var last_timestamp = 0; //global variable holding last skeleton set timestamp
 var last_A_dist; //global variable holding last skeleton set center coords
 var last_A_proj; //global variable holding last skeleton set screen projection center coords
 var intervalID, startTime;
-var skelOutProjIndex, skelOutDelIndex = 0;
+var skelOutProjIndex = 0;
+var skelOutDelIndex = 0;
+
+var skelsDist = [];
+var skelsProj = [];
+var skelsDel = [];
+var frames = [];
 
 //Skeleton object
 var Skeleton = function() {
@@ -247,10 +253,27 @@ function check_qeue() {
 
 	if (time < skeletons.skeletons[0].timestamp) return;
 
-	//TODO  if (time >= skeletons.skeletons[0].timestamp && skeletons.skeletons[0].inSync){}
-	if (time >= skeletons.skeletons[0].timestamp) {
-		send_message(skeletons.skeletons.shift(), 'skel_proj');
+	if (time >= skeletons.skeletons[skelOutProjIndex].timestamp) {
+		send_message(skeletons.skeletons[skelOutProjIndex], 'skel_proj');
+		skelOutProjIndex++;
 	}
+
+	//TODO by checking frames[0] only, we do not show out-of-order
+	var i =	skelsDel.findIndex(function (element){
+		return element.frame_num == frames[0];
+	});
+	if(i>-1 && skelsDel[i].timestamp <= time){
+		frames.shift();
+		send_message(skelsDel.splice(i,1)[0], 'skel_del');
+		skelOutDelIndex++;
+	}
+
+
+	/*if (time >= skeletons.skeletons[skelOutDelIndex].timestamp) {
+		send_message(skeletons.skeletons[skelOutDelIndex], 'skel_del');
+		skelOutDelIndex++;
+	}*/
+
 }
 
 function parse_skeleton(skel_set) {
@@ -284,10 +307,12 @@ function parse_skeleton(skel_set) {
 	}
 
 	skeletons.push(Skel_in);
+
 	if(type === 'DELA'){
 		skelsDel.push(Skel_in);
 	}else if(type === 'PROJ'){
 		skelsProj.push(Skel_in);
+		frames.push(Skel_in.frame_num);
 	}else{	//type ORIG
 		skelsDist.push(Skel_in);
 	}
