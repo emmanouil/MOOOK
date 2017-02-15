@@ -84,8 +84,7 @@ function addSegment() {
 
 //Handle following pl elements
 function handleNextPlElement() {
-	console.log("0")
-
+	
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
 	if (playlist[1] == null) {
@@ -93,7 +92,7 @@ function handleNextPlElement() {
 		console.log("[ERROR] endofplaylist?")
 		return;
 	} else if(mediaSource.sourceBuffers[0].updating){
-		console.log("1")
+		console.log('[WARNING] MSE Buffer is still updating')
 //		sourceBuffer.addEventListener('updateend', handleNextPlElement);
 	}else{
 		element = playlist.splice(1, 1).toString();
@@ -101,9 +100,7 @@ function handleNextPlElement() {
 			fetch(element, appendNextMediaSegment, "arraybuffer");
 			if(video.paused)
 				start_video();
-			console.log("2")
 		}else if (element.endsWith('.txt')) { //we have a coordinates file
-			console.log("3")
 			fetch(coord_url+element, parse_CoordFile);
 			//moved to be triggered by message from the worker
 			//handleNextPlElement();

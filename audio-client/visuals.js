@@ -131,7 +131,6 @@ function do_viz(projC, skel_type) {
 			console.log("[ERROR] drawing error");
 			return;
 		}
-		console.log(skel_type)
 
 		drawArc(lastDrawnProj[slot], 'rgb(255,255,255)');
 		drawArc(lastDrawnDel[slot], 'rgb(255,0,0)');
