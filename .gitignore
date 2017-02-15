@@ -11,6 +11,7 @@
 !Tools.h
 !Threads.h
 !server.js
+!tools.js
 
 #client-side
 !web-client/
