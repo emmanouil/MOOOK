@@ -47,4 +47,18 @@ http.createServer(function (request, response) {
   });
 }).listen(parseInt(port, 10));
 
-console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
+console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");/**
+ * @description Apends {num} entries to the playlist to be send
+ * @param {num} (optional) default: 1
+ * @return The updated playlist text
+ * 
+ */
+function pl_update(num){
+  if(typeof num === 'undefined' || num ===''){
+    num = 1;
+  }
+  for(var i=0; i<num; i++)
+    plText += plArray.shift();
+
+  return plText;
+}
