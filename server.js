@@ -15,7 +15,8 @@ var LOOK_FOR_INDEX = true;	//if url is a dir, try to load index.html in this dir
 //variables
 var pl_parsed = false;
 var plArray = [];   //playlist elements in Array format
-var plText ='';         //actual playlist to be constructed and send
+var plText ='';     //actual playlist to be constructed and send
+var intervalID;     //holds update playlist timer
 
 http.createServer(function (request, response) {
 
@@ -23,14 +24,18 @@ http.createServer(function (request, response) {
   var filename = path.join(process.cwd(), uri);
   var file = uri.toString().split('/').pop();
 
+  console.log(uri)
+
   if(file === 'playlist.m3u8'){
     if(pl_parsed){
       pl_send(response);
+      return;
     }else{
       plArray = tools.pl_parse(filename);
       pl_update(2);
       pl_parsed = true;
       pl_send(response);
+      intervalID = setInterval(pl_update, 1000);  //TODO: check for coords/segs
       return;
     }
   }
@@ -76,7 +81,6 @@ console.log("Static file server running at\n  => http://localhost:" + port + "/\
  * @param {response} The response object
  */
 function pl_send(response){
-  console.log(plText);
   response.writeHead(200);
   response.write(plText);
   response.end();
