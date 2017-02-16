@@ -15,8 +15,8 @@ const FULL_LOGS = false;
 const PLAYLIST_UPDATE_RATE = 500;	//in ms
 var port = '8080';
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
-var seg_url = 'http://localhost:'+port+'/x64/Debug/out/';
-var coord_url = 'http://localhost:'+port+'/';
+var seg_url = 'http://localhost:' + port + '/x64/Debug/out/';
+var coord_url = 'http://localhost:' + port + '/';
 const DISABLE_AUDIO = true;
 const withReverb = false;
 const withModulation = true;
@@ -33,7 +33,7 @@ var pl_timer_ID;
 var kill_all = false;
 
 //after window loads do the init
-window.onload = function() {
+window.onload = function () {
 	video = document.getElementById('v');
 	mediaSource.video = video;
 	video.ms = mediaSource;
@@ -85,13 +85,13 @@ function addSegment() {
 
 	sourceBuffer.appendBuffer(inSegment);
 	playlistPosition++;
-	sourceBuffer.addEventListener('updateend', handleNextPlElement,{once: false});
+	sourceBuffer.addEventListener('updateend', handleNextPlElement, { once: false });
 }
 
 //Handle following pl elements
 function handleNextPlElement() {
 
-	if(kill_all){
+	if (kill_all) {
 		console.log("Playlist updates terminated");
 		return;
 	}
@@ -102,41 +102,41 @@ function handleNextPlElement() {
 		console.log("[ERROR] endofplaylist?")
 		check_playlist();
 		return;
-	} else if(mediaSource.sourceBuffers[0].updating){
+	} else if (mediaSource.sourceBuffers[0].updating) {
 		console.log('[WARNING] MSE Buffer is still updating')
-//		sourceBuffer.addEventListener('updateend', handleNextPlElement);
-	}else{
+		//		sourceBuffer.addEventListener('updateend', handleNextPlElement);
+	} else {
 		//element = playlist.splice(1, 1).toString();
 		element = playlistArray[playlistPosition];
 		playlistPosition++;
 		if (element.endsWith('.m4s')) { //we have a segment
 			fetch(element, appendNextMediaSegment, "arraybuffer");
-			if(video.paused)
+			if (video.paused)
 				start_video();
-		}else if (element.endsWith('.txt')) { //we have a coordinates file
-			fetch(coord_url+element, parse_CoordFile);
+		} else if (element.endsWith('.txt')) { //we have a coordinates file
+			fetch(coord_url + element, parse_CoordFile);
 			//moved to be triggered by message from the worker
 			//handleNextPlElement();
-		}else if(element.startsWith("T:")){ //we have a coordinate set file	DEPRICATED
+		} else if (element.startsWith("T:")) { //we have a coordinate set file	DEPRICATED
 			console.log("[WARNING] Depricated format - Check now!");
 			handleCoordSet(element);
-		}else if(element.length<2){
+		} else if (element.length < 2) {
 			console.log("possible blank line in playlist - ignoring");
 			handleNextPlElement();
-		}else{
-			console.log("[WARNING] Unknown element in playlist - ignoring "+element);
+		} else {
+			console.log("[WARNING] Unknown element in playlist - ignoring " + element);
 		}
 	}
 }
 
 
 function appendNextMediaSegment(frag_resp) {
-	if(FULL_LOGS){
+	if (FULL_LOGS) {
 		console.log("adding to SourceBuffer..")
-		console.log("size: "+frag_resp.target.response.byteLength);
-		console.log("is in updating status "+sourceBuffer.updating);
+		console.log("size: " + frag_resp.target.response.byteLength);
+		console.log("is in updating status " + sourceBuffer.updating);
 	}
-	if (mediaSource.readyState == "closed"){
+	if (mediaSource.readyState == "closed") {
 		console.log("[ERROR] closed?")
 		return;
 	}
@@ -148,7 +148,7 @@ function appendNextMediaSegment(frag_resp) {
 	    }
 	*/
 	// Make sure the previous append is not still pending.
-	if (mediaSource.sourceBuffers[0].updating){
+	if (mediaSource.sourceBuffers[0].updating) {
 		console.log("[WARNING] previous mediaSource update still in progress")
 		return;
 	}
@@ -165,9 +165,9 @@ function appendNextMediaSegment(frag_resp) {
 	// NOTE: If mediaSource.readyState == “ended”, this appendBuffer() call will
 	// cause mediaSource.readyState to transition to "open". The web application
 	// should be prepared to handle multiple “sourceopen” events.
-//	mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement);
+	//	mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement);
 	mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
-	if(FULL_LOGS)
+	if (FULL_LOGS)
 		console.log("...added")
 }
 
@@ -180,7 +180,7 @@ function fetch(what, where, resp_type) {
 	var req = new XMLHttpRequest();
 	req.addEventListener("load", where);
 	req.open("GET", what);
-	if (typeof(resp_type) != 'undefined') {
+	if (typeof (resp_type) != 'undefined') {
 		req.responseType = resp_type;
 	}
 	req.send();
@@ -196,23 +196,23 @@ function parse_playlist() {
 	req_status = this.status;
 }
 
-function check_playlist(){
+function check_playlist() {
 	fetch(playlist_dir, compare_playlist);
 }
 
-function compare_playlist(){
+function compare_playlist() {
 	var pl_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
-	if(typeof pl_in[playlistPosition] !== 'undefined' && pl_in[playlistPosition].length > 3){
-		if(pl_in[playlistPosition] !== playlistArray[playlistPosition]){
+	if (typeof pl_in[playlistPosition] !== 'undefined' && pl_in[playlistPosition].length > 3) {
+		if (pl_in[playlistPosition] !== playlistArray[playlistPosition]) {
 			playlistArray = pl_in.slice();
 		}
 		handleNextPlElement();
-	}else{
+	} else {
 		pl_timer_ID = setTimeout(check_playlist, PLAYLIST_UPDATE_RATE);
 	}
 }
 
-function parse_CoordFile(coordCtx){
+function parse_CoordFile(coordCtx) {
 	coords_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
 	req_status = this.status;
 	handleCoordFile(coords_in);
@@ -220,9 +220,9 @@ function parse_CoordFile(coordCtx){
 
 function handleCoordFile(coors) {
 	skeleton_worker.postMessage({
-			type: 'coord_f',
-			data: coors
-		})
+		type: 'coord_f',
+		data: coors
+	})
 }
 
 function start_video() {
@@ -236,44 +236,44 @@ function start_video() {
 }
 
 //incoming msg from skeleton worker
-skeleton_worker.onmessage = function(e) {
+skeleton_worker.onmessage = function (e) {
 	var type = e.data.type;
 	var data = e.data.data;
 
 	if (typeof type === 'undefined') { //we have a (old) skeleton set
 		drawViz(e.data);
-		if(!DISABLE_AUDIO){
+		if (!DISABLE_AUDIO) {
 			do_the_audio(e.data);
-		}else{
+		} else {
 			is_playing = true;
 		}
-	} else if(type === 'skel_proj'){	//we have a projected coord
+	} else if (type === 'skel_proj') {	//we have a projected coord
 		drawViz(e.data, 'proj');
-	}else if(type === 'skel_del'){
+	} else if (type === 'skel_del') {
 		drawViz(e.data, 'del');
-	}else{ //we have a proccessed
+	} else { //we have a proccessed
 		switch (type) {
 			case 'update':
-			/*
-				if(sourceBuffer.updating){
-					console.log("[WARNING] previous")
-					mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement,{once: false});
-					return;
-				}
-			*/
+				/*
+					if(sourceBuffer.updating){
+						console.log("[WARNING] previous")
+						mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement,{once: false});
+						return;
+					}
+				*/
 				handleNextPlElement();
 				break;
 			case 'stop':
 				kill_audio();
 				break;
 			default:
-				console.log("NOTE: unwanted, of type: "+type);
+				console.log("NOTE: unwanted, of type: " + type);
 		}
 	}
 }
 
-function killAll(){
-		skeleton_worker.postMessage({
+function killAll() {
+	skeleton_worker.postMessage({
 		type: 'kill',
 		data: video.currentTime
 	})
