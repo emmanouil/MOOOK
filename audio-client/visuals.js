@@ -1,6 +1,7 @@
 //options
 var WITH_GRADIENT = false;
 var WITH_PARTICLES = false;
+var WITH_SKELETON = true;
 
 //vars
 var canvasCtx;
@@ -75,18 +76,15 @@ function drawViz(e, skel_type) {
 		initVizEnv(projC);
 	}
 
-	projC.forEach(function (item, index, array) {
-		canvasCtx.beginPath();
-		canvasCtx.fillStyle = 'rgb(255,0,0)';
-		canvasCtx.arc(2 * item[0], 2 * item[1], 5, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
-		canvasCtx.fill();
-		canvasCtx.closePath();
-	});
+	if(WITH_SKELETON){
+		drawSkeleton(projC, 'rgb(255,0,0)');
+	}
 
+/*
 	canvasCtx.fillStyle = 'rgb(50,255,0)';
 	canvasCtx.fillRect(0, yLineMax, canvas.width, 3);
 	canvasCtx.fillRect(0, yLineMin, canvas.width, 3);
-
+*/
 }
 
 function initVizEnv(skel) {
@@ -139,6 +137,16 @@ function do_viz(projC, skel_type) {
 	});
 
 	system.run();
+}
+
+function drawSkeleton(skelArray_in, colour){
+	skelArray_in.forEach(function (item, index, array) {
+		canvasCtx.beginPath();
+		canvasCtx.fillStyle = 'rgb(255,0,0)';
+		canvasCtx.arc(2 * item[0], 2 * item[1], 5, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
+		canvasCtx.fill();
+		canvasCtx.closePath();
+	});
 }
 
 function drawArc(xy, colour) {
