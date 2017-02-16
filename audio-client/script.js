@@ -29,6 +29,7 @@ var playlistArray, playlistPosition = 0;
 var skeleton_worker = new Worker('skel_parser.js');
 var req_status = -10;
 var pl_timer_ID;
+var kill_all = false;
 
 //after window loads do the init
 window.onload = function() {
@@ -89,6 +90,10 @@ function addSegment() {
 //Handle following pl elements
 function handleNextPlElement() {
 
+	if(kill_all){
+		console.log("Playlist updates terminated");
+		return;
+	}
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
 	if (playlistArray[playlistPosition] == null || playlistArray[playlistPosition].length < 3) {
@@ -263,9 +268,11 @@ skeleton_worker.onmessage = function(e) {
 	}
 }
 
-function kill_skels(){
+function killAll(){
 		skeleton_worker.postMessage({
 		type: 'kill',
 		data: video.currentTime
 	})
+	clearTimeout(pl_timer_ID);
+	kill_all = true;
 }
