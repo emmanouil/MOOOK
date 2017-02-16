@@ -24,6 +24,7 @@ const reverbFile = 'concert-crowd2.ogg';
 var mime_codec = 'video/mp4; codecs="avc1.42c01e"';
 var mediaSource = new MediaSource();
 var video, playlist, textTrack, cues;
+var playlistArray, playlistPosition = 0;
 var skeleton_worker = new Worker('skel_parser.js');
 var req_status = -10;
 
@@ -79,23 +80,27 @@ function addSegment() {
 	}
 
 	sourceBuffer.appendBuffer(inSegment);
+	playlistPosition++;
 	sourceBuffer.addEventListener('updateend', handleNextPlElement,{once: false});
 }
 
 //Handle following pl elements
 function handleNextPlElement() {
-	
+
 	// Append some initial media data.
 	//TODO instead of terminating MSE - poll for new segs
-	if (playlist[1] == null) {
+	if (playlistArray[playlistPosition] == null || playlistArray[playlistPosition].length < 3) {
 		//mediaSource.endOfStream();
 		console.log("[ERROR] endofplaylist?")
+		check_playlist();
 		return;
 	} else if(mediaSource.sourceBuffers[0].updating){
 		console.log('[WARNING] MSE Buffer is still updating')
 //		sourceBuffer.addEventListener('updateend', handleNextPlElement);
 	}else{
-		element = playlist.splice(1, 1).toString();
+		//element = playlist.splice(1, 1).toString();
+		element = playlistArray[playlistPosition];
+		playlistPosition++;
 		if (element.endsWith('.m4s')) { //we have a segment
 			fetch(element, appendNextMediaSegment, "arraybuffer");
 			if(video.paused)
@@ -176,6 +181,7 @@ function fetch_pl() {
 
 function parse_playlist() {
 	playlist = this.responseText.split(/\r\n|\r|\n/); //split on break-line
+	playlistArray = playlist.slice();
 	req_status = this.status;
 }
 
