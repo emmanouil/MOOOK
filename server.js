@@ -97,7 +97,27 @@ function pl_update(num){
     num = 1;
   }
   for(var i=0; i<num; i++)
-    plText += plArray.shift();
+    plText += next_m4s_element();
+//    plText += plArray.shift();
 
   return plText;
+}
+
+function next_m4s_element(){
+  var elem = plArray.shift();
+  while(typeof elem !== 'undefined' && (!elem.endsWith('m4s')&&!elem.endsWith('m4s'+String.fromCharCode(13)))){
+      elem += plArray.shift();
+  }
+  return elem;
+  /*
+  console.log(elem)
+  if(typeof elem ==='undefined')
+    return '';
+  if(elem.endsWith('m4s')){
+    return elem;
+  }else{
+    elem += next_m4s_element();
+    return elem;
+  }
+  */
 }
