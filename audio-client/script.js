@@ -11,6 +11,7 @@
 
 //options
 const WITH_COORDS_IN_PL = true;	//backwards compatibility - to be removed
+const PLAYLIST_UPDATE_RATE = 500;	//in ms
 var port = '8080';
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
 var seg_url = 'http://localhost:'+port+'/x64/Debug/out/';
@@ -27,6 +28,7 @@ var video, playlist, textTrack, cues;
 var playlistArray, playlistPosition = 0;
 var skeleton_worker = new Worker('skel_parser.js');
 var req_status = -10;
+var pl_timer_ID;
 
 //after window loads do the init
 window.onload = function() {
@@ -197,7 +199,7 @@ function compare_playlist(){
 		}
 		handleNextPlElement();
 	}else{
-		setTimeout(check_playlist, 500);
+		pl_timer_ID = setTimeout(check_playlist, PLAYLIST_UPDATE_RATE);
 	}
 }
 
