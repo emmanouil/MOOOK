@@ -242,7 +242,7 @@ function check_qeue() {
 
 	var time = performance.now() - startTime;
 
-	if ((typeof skeletons.skeletons[0] === 'undefined') || (skeletons.skeletons.length < 1)) {
+	if ((typeof skeletons.skeletons === 'undefined') || (skeletons.skeletons.length < 1)) {
 		/*	//We do not want to stop anymore when the sklls are over
 		send_message('now', 'stop');
 		clearInterval(intervalID);
@@ -252,6 +252,8 @@ function check_qeue() {
 	}
 
 	if (time < skeletons.skeletons[0].timestamp) return;
+
+	if(skeletons.skeletons.length <= skelOutProjIndex) return;
 
 	if (time >= skeletons.skeletons[skelOutProjIndex].timestamp) {
 		send_message(skeletons.skeletons[skelOutProjIndex], 'skel_proj');
