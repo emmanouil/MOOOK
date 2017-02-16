@@ -9,6 +9,7 @@ var new_viz = true;
 var counter = 0;
 var Rstack;
 var Lstack;
+var init_viz = true;
 
 var lastDrawnDel = [[0, 0], [0, 0]];
 var lastDrawnProj = [[0, 0], [0, 0]];
@@ -62,7 +63,7 @@ function drawViz(e, skel_type) {
 	if (new_viz) {
 		if (counter < 10) counter++;
 		do_viz(projC, skel_type);
-		if (!is_playing) { //we received the first skeleton coords
+		if (!is_playing && init_viz) { //we received the first skeleton coords
 			initVizEnv(projC);
 		}
 
@@ -70,7 +71,7 @@ function drawViz(e, skel_type) {
 		return;
 	}
 
-	if (!is_playing) { //we received the first skeleton coords
+	if (!is_playing && init_viz) { //we received the first skeleton coords
 		initVizEnv(projC);
 	}
 
@@ -98,6 +99,7 @@ function initVizEnv(skel) {
 	yLineMax = head > 0 ? 2 * head : 0;
 	var kneeAvg = (skel[13][1] + skel[17][1]) / 2;
 	yLineMin = 2 * Math.round(kneeAvg - (yLineMax + kneeAvg) / 9);
+	init_viz = false;
 
 }
 
