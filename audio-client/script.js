@@ -179,6 +179,22 @@ function parse_playlist() {
 	req_status = this.status;
 }
 
+function check_playlist(){
+	fetch(playlist_dir, compare_playlist);
+}
+
+function compare_playlist(){
+	var pl_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
+	if(typeof pl_in[playlistPosition] !== 'undefined' && pl_in[playlistPosition].length > 3){
+		if(pl_in[playlistPosition] !== playlistArray[playlistPosition]){
+			playlistArray = pl_in.slice();
+		}
+		handleNextPlElement();
+	}else{
+		setTimeout(check_playlist, 500);
+	}
+}
+
 function parse_CoordFile(coordCtx){
 	coords_in = this.responseText.split(/\r\n|\r|\n/); //split on break-line
 	req_status = this.status;
