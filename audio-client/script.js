@@ -11,6 +11,7 @@
 
 //options
 const WITH_COORDS_IN_PL = true;	//backwards compatibility - to be removed
+const FULL_LOGS = false;
 const PLAYLIST_UPDATE_RATE = 500;	//in ms
 var port = '8080';
 var playlist_dir = '../x64/Debug/out/playlist.m3u8';
@@ -130,9 +131,11 @@ function handleNextPlElement() {
 
 
 function appendNextMediaSegment(frag_resp) {
-console.log("addin")
-	console.log(frag_resp.target.response.byteLength);
-	console.log(sourceBuffer.updating);
+	if(FULL_LOGS){
+		console.log("adding to SourceBuffer..")
+		console.log("size: "+frag_resp.target.response.byteLength);
+		console.log("is in updating status "+sourceBuffer.updating);
+	}
 	if (mediaSource.readyState == "closed"){
 		console.log("[ERROR] closed?")
 		return;
@@ -164,7 +167,8 @@ console.log("addin")
 	// should be prepared to handle multiple “sourceopen” events.
 //	mediaSource.sourceBuffers[0].addEventListener('updateend', handleNextPlElement);
 	mediaSource.sourceBuffers[0].appendBuffer(mediaSegment);
-	console.log("added")
+	if(FULL_LOGS)
+		console.log("...added")
 }
 
 //Content-loading functions
