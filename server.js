@@ -20,6 +20,24 @@ var intervalID;     //holds update playlist timer
 
 http.createServer(function (request, response) {
 
+
+
+//Handle POST
+  var body = [];
+  request.on('data', function(chunk) {
+    if(request.method === "POST")
+      body.push(chunk);
+  }).on('end', function() {
+      if(request.method === "POST"){
+        body = Buffer.concat(body).toString();
+        if(body === 'reset'){
+          resetServer();
+        }
+        return;
+      }
+  });
+
+
   var uri = url.parse(request.url).pathname;
   var filename = path.join(process.cwd(), uri);
   var file = uri.toString().split('/').pop();
@@ -72,6 +90,7 @@ http.createServer(function (request, response) {
   });
 }).listen(parseInt(port, 10));
 
+
 console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
 
 
@@ -120,4 +139,13 @@ function next_m4s_element(){
     return elem;
   }
   */
+}
+
+
+function resetServer(){
+  console.log('reseting server...')
+  pl_parsed = false;
+  plArray = [];
+  plText ='';     //actual playlist to be constructed and send
+  clearInterval(intervalID);
 }

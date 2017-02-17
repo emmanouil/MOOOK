@@ -280,3 +280,10 @@ function killAll() {
 	clearTimeout(pl_timer_ID);
 	kill_all = true;
 }
+
+function restartServer(){
+	var req = new XMLHttpRequest();
+	req.open('POST', '');
+	req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	req.send('reset');
+}
