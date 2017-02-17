@@ -14,6 +14,8 @@ var init_viz = true;
 
 var lastDrawnDel = [[0, 0], [0, 0]];
 var lastDrawnProj = [[0, 0], [0, 0]];
+var lastSkelDel =[];
+var lastSkelProj =[];
 
 function canvasInit() {
 	setup();
@@ -69,7 +71,7 @@ function drawViz(e, skel_type) {
 		}
 
 
-		return;
+		//return;
 	}
 
 	if (!is_playing && init_viz) { //we received the first skeleton coords
@@ -77,7 +79,17 @@ function drawViz(e, skel_type) {
 	}
 
 	if(WITH_SKELETON){
-		drawSkeleton(projC, 'rgb(255,0,0)');
+		if(!new_viz){
+			drawSkeleton(projC, 'rgb(255,0,0)');
+		}else{
+			if(skel_type === 'del'){
+				lastSkelDel = projC.slice();
+			}else if(skel_type ==='proj'){
+				lastSkelProj = projC.slice();
+			}
+				drawSkeleton(lastSkelDel, 'rgb(255,0,0)');
+				drawSkeleton(lastSkelProj,'rgb(255,255,255)');
+		}
 	}
 
 /*
@@ -142,7 +154,7 @@ function do_viz(projC, skel_type) {
 function drawSkeleton(skelArray_in, colour){
 	skelArray_in.forEach(function (item, index, array) {
 		canvasCtx.beginPath();
-		canvasCtx.fillStyle = 'rgb(255,0,0)';
+		canvasCtx.fillStyle = colour;
 		canvasCtx.arc(2 * item[0], 2 * item[1], 5, (Math.PI / 180) * 0, (Math.PI / 180) * 360, false);
 		canvasCtx.fill();
 		canvasCtx.closePath();
