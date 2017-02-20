@@ -119,6 +119,11 @@ function pl_update(num){
     plText += next_m4s_element();
 //    plText += plArray.shift();
 
+  //check if there is a coordinate set following
+  if(plArray[0].endsWith('txt')||plArray[0].endsWith('txt'+String.fromCharCode(13))){
+    plText +=plArray.shift();
+  }
+
   return plText;
 }
 
