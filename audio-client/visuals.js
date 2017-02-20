@@ -17,10 +17,7 @@ var lastSkelDel =[];
 var lastSkelProj =[];
 
 function canvasInit() {
-	canvas = document.createElement('canvas');
-	canvas.id = ('c')
-	document.body.appendChild(canvas);
-	//canvas = document.querySelector('.canvas');
+	canvas = document.querySelector('#c');
 	canvas.width = video.width;
 	canvas.height = video.height;
 	canvasCtx = canvas.getContext('2d');
