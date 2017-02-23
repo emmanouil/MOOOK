@@ -11,6 +11,7 @@ var tools = require('./tools.js');
 
 //options
 var LOOK_FOR_INDEX = true;	//if url is a dir, try to load index.html in this dir
+const FULL_PLAYLIST = false; //server full playlist in request (used for non-visual testing)
 
 //variables
 var pl_parsed = false;
@@ -44,17 +45,19 @@ http.createServer(function (request, response) {
 
   console.log(uri)
 
-  if(file === 'playlist.m3u8'){
-    if(pl_parsed){
-      pl_send(response);
-      return;
-    }else{
-      plArray = tools.pl_parse(filename);
-      pl_update(2);
-      pl_parsed = true;
-      pl_send(response);
-      intervalID = setInterval(pl_update, 1000);  //TODO: check for coords/segs
-      return;
+  if(!FULL_PLAYLIST){
+    if(file === 'playlist.m3u8'){
+      if(pl_parsed){
+        pl_send(response);
+        return;
+      }else{
+        plArray = tools.pl_parse(filename);
+        pl_update(2);
+        pl_parsed = true;
+        pl_send(response);
+        intervalID = setInterval(pl_update, 1000);  //TODO: check for coords/segs
+        return;
+      }
     }
   }
 
