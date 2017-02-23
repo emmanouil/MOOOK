@@ -1,8 +1,10 @@
 //options
 var WITH_GRADIENT = false;
 var WITH_SKELETON = true;
+var WITH_OVERLAY = true;
 
 //vars
+var overlay_canv, over_canv_ctx;
 var canvasCtx;
 var yLineMax, yLineMin;
 var new_viz = true;
@@ -21,6 +23,14 @@ function canvasInit() {
 	canvas.width = video.width;
 	canvas.height = video.height;
 	canvasCtx = canvas.getContext('2d');
+	if(WITH_OVERLAY){
+		overlay_canv = document.querySelector('#canv');
+		overlay_canv.width = video.width;
+		overlay_canv.height = video.height;
+		over_canv_ctx = overlay_canv.getContext('2d');
+		over_canv_ctx.fillStyle="rgba(100,100,100,0.5)";
+		over_canv_ctx.fillRect(0,0,overlay_canv.width,overlay_canv.height);
+	}
 }
 
 function drawViz(e, skel_type) {
