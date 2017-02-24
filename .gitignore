@@ -12,6 +12,7 @@
 !Threads.h
 !server.js
 !tools.js
+!analyzer.js
 
 #client-side
 !web-client/
