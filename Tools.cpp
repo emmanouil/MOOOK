@@ -178,10 +178,16 @@ void generate_projected_coords(skeletalData *in_d){
 	coordinateStream << "\n" << "TYPE:PROJ " << "T:" << timeref << coords.str() <<"\n \n";
 
 	//sleep (simulate processing)
+#ifdef UNIFORM_DISTRIBUTION
 	random_device rd;
 	mt19937 gen(rd());
 	uniform_int_distribution<> dist(MIN_PROC_DELAY, MAX_PROC_DELAY);
 	int millis = dist(gen);
+#elif BINOMIAL_DISTRIBUTION
+	std::default_random_engine generator;
+	binomial_distribution<int> dist(MAX_PROC_DELAY-MIN_PROC_DELAY, BINOMIAL_PROPABILITY);
+	int millis = dist(generator)+MIN_PROC_DELAY;
+#endif
 	Sleep(millis);
 	printf("generated skel %u \n",in.skel_num);	//TODOk remove
 	// stop timer
