@@ -8,7 +8,7 @@ var pl_list = playlist.split(/\r\n|\r|\n/);
 var coord_files = [], coord_n, sets = [];
 var maxDelay = 0, syncEvents = 0, syncTime = 0;
 
-var state = { mxD: 0, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg:0 };
+var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg:0 };
 var states = [];
 var last_frame_time = 0, rebuff_time = 0, mxSegDiff = 0;
 var proj = [], dela = [];
@@ -58,7 +58,7 @@ for (var i = 0; i < proj.length; i++) {
   check_one(proj[i]);
 }
 states.push(Object.assign({}, state));
-state = { mxD: 0, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg:0 };
+state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg:0 };
 for (var i = 0; i < proj.length; i++) {
   check_three(proj[i]);
 }
@@ -93,6 +93,9 @@ function check_one(p_in) {
         if (tmp_d > state.mxD) {
           state.mxD = tmp_d
         }
+      if(tmp_d < state.mnD){
+        state.mnD = tmp_d;
+      }
         state.total_time = p_in[1][1];
         return;
       }
@@ -143,6 +146,9 @@ function check_three(p_in) {
       if(tmp_d>3000)console.log(tmp_d)
       if (tmp_d > state.mxD) {
         state.mxD = tmp_d;
+      }
+      if(tmp_d < state.mnD){
+        state.mnD = tmp_d;
       }
 
       //delay with segs in account
