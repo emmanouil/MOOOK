@@ -183,6 +183,12 @@ void generate_projected_coords(skeletalData *in_d){
 	mt19937 gen(rd());
 	uniform_int_distribution<> dist(MIN_PROC_DELAY, MAX_PROC_DELAY);
 	int millis = dist(gen);
+#elif NORMAL_DISTRIBUTION
+	//std::default_random_engine generator;
+	random_device rd;
+	mt19937 gen(rd());
+	normal_distribution<float> dist(MAX_PROC_DELAY/2, NORMAL_STANDARD_DEVIATION);
+	int millis = static_cast<int>(dist(gen));
 #elif BINOMIAL_DISTRIBUTION
 	std::default_random_engine generator;
 	binomial_distribution<int> dist(MAX_PROC_DELAY-MIN_PROC_DELAY, BINOMIAL_PROPABILITY);

@@ -27,12 +27,19 @@
 #define MAX_THREADS		100
 
 //when simulating processing (in ms)
-#define MIN_PROC_DELAY			300
-#define MAX_PROC_DELAY			3000
-#define BINOMIAL_PROPABILITY	0.9
+	//simulation delay parameters
+#define MIN_PROC_DELAY			191
+#define MAX_PROC_DELAY			3245
 
-//#define UNIFORM_DISTRIBUTION	1
-#define BINOMIAL_DISTRIBUTION	1
+	//distribution type
+#define UNIFORM_DISTRIBUTION	1
+//#define BINOMIAL_DISTRIBUTION	1
+//#define NORMAL_DISTRIBUTION	1
+
+	//distribution parameters
+#define BINOMIAL_PROPABILITY	0.9
+#define NORMAL_STANDARD_DEVIATION	500
+
 
 #ifdef _DEBUG
 void RedirectIOToConsole();
