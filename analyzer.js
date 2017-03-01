@@ -38,6 +38,7 @@ for (var i = 0; i < coord_files.length; i++) {
 }
 
 
+//iterate sets and separate proj[] and dela[]
 var curr_seg = 0;
 for (var i = 0; i < sets.length; i++) {
   var cs = sets[i].split(' ');
@@ -54,8 +55,13 @@ for (var i = 0; i < sets.length; i++) {
   }
 }
 
+//check that everything is as supposed to be (regarding the dataset)
+var a_ok = check_consistency();
+console.log(( a_ok ? '[A-OK]' : '[WARNING] possible error'));
 
-var one = 0, two = 0;
+
+//do the analysis of the coords
+var b1 = 0, b2 = 0, a1=0, a2=0, a3 =0;
 for (var i = 0; i < proj.length; i++) {
   check_one(proj[i]);
 }
@@ -83,6 +89,19 @@ console.log(coord_n + " elems")
 //console.log(playlist);
 
 
+
+function check_consistency(){
+  var initFrn = 0;
+  for (var i = 0; i < proj.length; i++) {
+    if(initFrn < proj[i][4][1]){
+      initFrn = proj[i][4][1];
+    }else{
+      console.log('[WARNING] possible framecount error');
+    }
+
+  }
+  return true;
+}
 
 //First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
 function check_one(p_in) {
