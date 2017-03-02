@@ -128,6 +128,13 @@ function check_consistency() {
 
 
 
+
+function write(filename, data) {
+  var file = NODE_PATH + filename;
+  fs.writeFileSync(file, data);
+}
+
+
   }
   return true;
 }
