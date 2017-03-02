@@ -1,14 +1,20 @@
 var path = require("path"),
   fs = require("fs");
 
+const NODE_PATH = 'x64/Debug/node_out/';
+
 var ex = fs.existsSync('x64/Debug/out/playlist.m3u8');
 var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
 
 var pl_list = playlist.split(/\r\n|\r|\n/);
 var coord_files = [], coord_n, sets = [];
 var maxDelay = 0, syncEvents = 0, syncTime = 0;
+var finalFrame = 0, actualFrames = 0;;
 
 var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
+
+
 var states = [];
 var last_frame_time = 0, rebuff_time = 0, mxSegDiff = 0;
 var proj = [], dela = [];
@@ -90,22 +96,46 @@ console.log(coord_n + " elems")
 
 
 
-function check_consistency(){
+function check_consistency() {
   var initFrn = 0;
   for (var i = 0; i < proj.length; i++) {
-    if(initFrn < proj[i][4][1]){
+    if (initFrn < proj[i][4][1]) {
       initFrn = proj[i][4][1];
-    }else{
+    } else {
       console.log('[WARNING] possible framecount error');
     }
+  }
+
+  var lastFrn = 0;
+  for (var i = 0; i < proj.length; i++) {
+    var tmpFrn = 0;
+    dela.forEach(function (element) {
+      if (element[4][1] == proj[i][4][1]) {
+        tmpFrn = element[4][1];
+      }
+    });
+
+    if (tmpFrn == 0) {
+      finalFrame = lastFrn;
+      return true;
+    } else {
+      actualFrames++;
+      lastFrn = tmpFrn;
+    }
+  }
+  return false;
+}
+
+
 
   }
   return true;
 }
 
+// --- OLD SCENARIOS ---
 //First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
 function check_one(p_in) {
-  one++;
+  b1++;
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
       if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
@@ -150,7 +180,7 @@ function check_two(p_in) {
 //We apply a synchronization technique with elastics buffers, in which as soon as a coordinate sample arrives with delay ($D_s$) larger than the current \texttt{MaxDelay} value, a rebuffering event occurs and the \texttt{MaxDelay} value is updated to match it (i.e. if \texttt{MaxDelay}$~>D_s$, then \texttt{MaxDelay}$~:=D_s$).
 //Thus, the initial \texttt{MaxDelay} value will equal the delay of the first coordinate sample.
 function check_three(p_in) {
-  two++;
+  b2++;
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {
       state.sync_events++;
