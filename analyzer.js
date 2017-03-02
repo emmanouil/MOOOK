@@ -65,6 +65,7 @@ for (var i = 0; i < sets.length; i++) {
 var a_ok = check_consistency();
 console.log(( a_ok ? '[A-OK]' : '[WARNING] possible error'));
 
+count_occurences();
 
 //do the analysis of the coords
 var b1 = 0, b2 = 0, a1=0, a2=0, a3 =0;
@@ -127,6 +128,23 @@ function check_consistency() {
 }
 
 
+
+function count_occurences(){
+  var delays = [];
+  for(var i=0; i<50; i++){
+    delays.push(parseInt(0));
+  }
+  for(var i=0; i<actualFrames; i++){
+    var slot = parseInt((dela[i][26][1])/100);
+    delays[slot]++;
+  }
+  var tost ='';
+  for(var i=0; i<delays.length; i++){
+    tost+=delays[i].toString()+'\n';
+  }
+  write('calcu.txt',tost);
+  return;
+}
 
 
 function write(filename, data) {
