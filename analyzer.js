@@ -9,7 +9,11 @@ var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
 var pl_list = playlist.split(/\r\n|\r|\n/);
 var coord_files = [], coord_n, sets = [];
 var maxDelay = 0, syncEvents = 0, syncTime = 0;
-var finalFrame = 0, actualFrames = 0;;
+
+//set at check_consistency()
+var finalFrame = 0, actualFrames = 0;
+//set at check_delays()
+var maxObservedDelay = 0, minObservedDelay = 99999;
 
 var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
@@ -164,6 +168,29 @@ function write(filename, data) {
   fs.writeFileSync(file, data);
 }
 
+
+function check_delays(){
+  var local_delay = 0;
+  for (var i = 0; i < actualFrames; i++) {
+    p_in = proj[i];
+    if(p_in[4][1]>lastFrn){
+      console.log("[ERROR] more frames than not");
+    }
+
+    for(var j =0; j< dela.length; j++){
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])){  //check frame no.
+        local_delay = dela[j][1][1] - p_in[1][1];
+        break;
+      }
+    }
+
+    if(minObservedDelay>local_delay){
+      minObservedDelay = local_delay;
+    }
+
+
+  }
+}
 
 /**
  * First scenario:
