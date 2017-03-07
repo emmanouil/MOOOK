@@ -16,7 +16,7 @@ var finalFrame = 0, actualFrames = 0;
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
 var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
-var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
+var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 
 
 var states = [];
@@ -31,7 +31,7 @@ for (var i = 0; i < pl_list.length; i++) {
   if (pl_list[i].endsWith('.txt')) {
     coord_n = coord_files.push(fs.readFileSync(pl_list[i].toString(), 'utf8'));
   } else {
-    console.log("error")
+    console.log("[WARNING]playlist element "+pl_list[i]+" not parsed")
   }
 }
 
@@ -67,13 +67,15 @@ for (var i = 0; i < sets.length; i++) {
 
 //check that everything is as supposed to be (regarding the dataset)
 var a_ok = check_consistency();
-console.log(( a_ok ? '[A-OK]' : '[WARNING] possible error'));
-console.log("actual frames "+actualFrames+" last frame no: "+finalFrame);
+console.log((a_ok ? '[A-OK]' : '[WARNING] possible error'));
+console.log("actual frames " + actualFrames + " last frame no: " + finalFrame);
 
 count_occurences();
 
+check_delays();
+
 //do the analysis of the coords
-var b1 = 0, b2 = 0, a1=0, a2=0, a3 =0;
+var b1 = 0, b2 = 0, a1 = 0, a2 = 0, a3 = 0;
 
 check_one();
 states.push(Object.assign({}, state));
@@ -123,6 +125,7 @@ console.log(coord_n + " elems")
 
 function check_consistency() {
   var initFrn = 0;
+
   for (var i = 0; i < proj.length; i++) {
     if (initFrn < proj[i][4][1]) {
       initFrn = proj[i][4][1];
@@ -153,18 +156,18 @@ function check_consistency() {
 
 
 
-function count_occurences(){
+function count_occurences() {
   var delays = [];
-  for(var i=0; i<50; i++){
+  for (var i = 0; i < 50; i++) {
     delays.push(parseInt(0));
   }
-  for(var i=0; i<actualFrames; i++){
-    var slot = parseInt((dela[i][26][1])/100);
+  for (var i = 0; i < actualFrames; i++) {
+    var slot = parseInt((dela[i][26][1]) / 100);
     delays[slot]++;
   }
-  var tost ='';
-  for(var i=0; i<delays.length; i++){
-    tost+=delays[i].toString()+'\n';
+  var tost = '';
+  for (var i = 0; i < delays.length; i++) {
+    tost += delays[i].toString() + '\n';
   }
   //write('calcu.txt',tost);
   return;
@@ -177,28 +180,33 @@ function write(filename, data) {
 }
 
 
-function check_delays(){
+function check_delays() {
   var local_delay = 0;
   for (var i = 0; i < actualFrames; i++) {
     p_in = proj[i];
-    if(p_in[4][1]>lastFrn){
+    if (p_in[4][1] > finalFrame) {
       console.log("[ERROR] more frames than not");
     }
 
-    for(var j =0; j< dela.length; j++){
-      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])){  //check frame no.
+    for (var j = 0; j < dela.length; j++) {
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {  //check frame no.
         local_delay = dela[j][1][1] - p_in[1][1];
         break;
       }
     }
 
-    if(minObservedDelay>local_delay){
+    if (minObservedDelay > local_delay) {
       minObservedDelay = local_delay;
     }
 
+    if (maxObservedDelay < local_delay) {
+      maxObservedDelay = local_delay;
+    }
 
   }
 }
+
+
 
 /**
  * First scenario:
@@ -224,17 +232,17 @@ function check_a1(p_in) {
 function check_one() {
   var bufD = 1000;
   var bufA = 1000;
-  for (var i=0; i < proj.length; i++){
+  for (var i = 0; i < proj.length; i++) {
     p_in = proj[i];
     for (var j = 0; j < dela.length; j++) {
-        if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-          state.sync_events++;
-          var tmp_d = dela[j][1][1] - p_in[1][1];
-          if(tmp_d > bufD){
-            state.total_time = p_in[1][1] - proj[0][1][1];
-            return;
-          }
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+        state.sync_events++;
+        var tmp_d = dela[j][1][1] - p_in[1][1];
+        if (tmp_d > bufD) {
+          state.total_time = p_in[1][1] - proj[0][1][1];
+          return;
         }
+      }
     }
   }
 }
@@ -245,18 +253,18 @@ function check_one() {
 function check_two() {
   var bufD = 1000;
   var bufA = 1000;
-  for (var i=0; i < proj.length; i++){
+  for (var i = 0; i < proj.length; i++) {
     p_in = proj[i];
     for (var j = 0; j < dela.length; j++) {
-        if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-          state.sync_events++;
-          var tmp_d = dela[j][1][1] - p_in[1][1];
-          if(tmp_d > bufD){
-            state.rebuff_events++;
-            state.rebuff_time += tmp_d - bufD;
-            bufD = tmp_d;
-          }
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+        state.sync_events++;
+        var tmp_d = dela[j][1][1] - p_in[1][1];
+        if (tmp_d > bufD) {
+          state.rebuff_events++;
+          state.rebuff_time += tmp_d - bufD;
+          bufD = tmp_d;
         }
+      }
     }
     state.total_time = p_in[1][1] - proj[0][1][1];
   }
