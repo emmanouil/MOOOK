@@ -64,13 +64,14 @@ for (var i = 0; i < sets.length; i++) {
 //check that everything is as supposed to be (regarding the dataset)
 var a_ok = check_consistency();
 console.log(( a_ok ? '[A-OK]' : '[WARNING] possible error'));
+console.log("actual frames "+actualFrames+" last frame no: "+finalFrame);
 
 count_occurences();
 
 //do the analysis of the coords
 var b1 = 0, b2 = 0, a1=0, a2=0, a3 =0;
 for (var i = 0; i < proj.length; i++) {
-  check_one(proj[i]);
+  check_oneOLD(proj[i]);
 }
 states.push(Object.assign({}, state));
 state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
@@ -142,7 +143,7 @@ function count_occurences(){
   for(var i=0; i<delays.length; i++){
     tost+=delays[i].toString()+'\n';
   }
-  write('calcu.txt',tost);
+  //write('calcu.txt',tost);
   return;
 }
 
@@ -153,13 +154,49 @@ function write(filename, data) {
 }
 
 
+/**
+ * First scenario:
+ * 1s initial buffer
+ * on event: rebuffer
+ * measure: % time in sync, rebuff events, rebuff time, accumulated jitter
+ */
+/*
+function check_a1(p_in) {
+  a1 =0;
+  test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
+  for (var i = 0; i < proj.length; i++) {
+
+
+    a1++;
   }
-  return true;
 }
+*/
 
 // --- OLD SCENARIOS ---
 //First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
+
 function check_one(p_in) {
+  b1++;
+  for (var j = 0; j < dela.length; j++) {
+    if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+        state.sync_events++;
+        var tmp_d = dela[j][1][1] - p_in[1][1];
+        if (tmp_d > state.mxD) {
+          state.mxD = tmp_d
+        }
+        if (tmp_d < state.mnD) {
+          state.mnD = tmp_d;
+        }
+        state.total_time = p_in[1][1];
+        return;
+      }
+    }
+  }
+  state.missed_frames++;
+}
+
+function check_oneOLD(p_in) {
   b1++;
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
