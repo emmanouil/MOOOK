@@ -11,7 +11,7 @@ var coord_files = [], coord_n, sets = [];
 var maxDelay = 0, syncEvents = 0, syncTime = 0;
 var finalFrame = 0, actualFrames = 0;;
 
-var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
 
 
@@ -70,11 +70,22 @@ count_occurences();
 
 //do the analysis of the coords
 var b1 = 0, b2 = 0, a1=0, a2=0, a3 =0;
+
+check_one();
+states.push(Object.assign({}, state));
+state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+check_two();
+states.push(Object.assign({}, state));
+state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+
+
+
+
 for (var i = 0; i < proj.length; i++) {
   check_oneOLD(proj[i]);
 }
 states.push(Object.assign({}, state));
-state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 for (var i = 0; i < proj.length; i++) {
   check_three(proj[i]);
 }
@@ -172,30 +183,53 @@ function check_a1(p_in) {
 }
 */
 
-// --- OLD SCENARIOS ---
-//First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
 
-function check_one(p_in) {
-  b1++;
-  for (var j = 0; j < dela.length; j++) {
-    if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
-      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-        state.sync_events++;
-        var tmp_d = dela[j][1][1] - p_in[1][1];
-        if (tmp_d > state.mxD) {
-          state.mxD = tmp_d
+//First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
+//no catch-up - buffer 1s
+function check_one() {
+  var bufD = 1000;
+  var bufA = 1000;
+  for (var i=0; i < proj.length; i++){
+    p_in = proj[i];
+    for (var j = 0; j < dela.length; j++) {
+        if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+          state.sync_events++;
+          var tmp_d = dela[j][1][1] - p_in[1][1];
+          if(tmp_d > bufD){
+            state.total_time = p_in[1][1] - proj[0][1][1];
+            return;
+          }
         }
-        if (tmp_d < state.mnD) {
-          state.mnD = tmp_d;
-        }
-        state.total_time = p_in[1][1];
-        return;
-      }
     }
   }
-  state.missed_frames++;
 }
 
+
+//First, the intuitive player implementation, in which the video is the main stream and the playback starts as soon as the first segment arrives, regardless of the state of the secondary (coordinate) stream.
+//buffer roses, same as speedup
+function check_two() {
+  var bufD = 1000;
+  var bufA = 1000;
+  for (var i=0; i < proj.length; i++){
+    p_in = proj[i];
+    for (var j = 0; j < dela.length; j++) {
+        if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+          state.sync_events++;
+          var tmp_d = dela[j][1][1] - p_in[1][1];
+          if(tmp_d > bufD){
+            state.rebuff_events++;
+            state.rebuff_time += tmp_d - bufD;
+            bufD = tmp_d;
+          }
+        }
+    }
+    state.total_time = p_in[1][1] - proj[0][1][1];
+  }
+}
+
+
+
+// --- OLD SCENARIOS ---
 function check_oneOLD(p_in) {
   b1++;
   for (var j = 0; j < dela.length; j++) {
@@ -220,7 +254,7 @@ function check_oneOLD(p_in) {
 
 //In the second scenario, the coordinate stream is set as the main stream, with the \texttt{MaxDelay} known in advance.
 //The playback commences as soon as the \Tp~ of the coordinate buffer equals \texttt{MaxDelay}.
-function check_two(p_in) {
+function check_twoOLD(p_in) {
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {
       if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
