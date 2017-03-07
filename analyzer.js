@@ -94,6 +94,14 @@ for (var i = 0; i < proj.length; i++) {
   check_three(proj[i]);
 }
 states.push(state);
+
+
+
+check_two();
+states.push(Object.assign({}, state));
+state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+
+
 // check_two(proj[i]);
 
 
