@@ -8,12 +8,13 @@ const RESULTS_FILE = date.getHours().toString()+date.getMinutes().toString()+dat
 var ex = fs.existsSync('x64/Debug/out/playlist.m3u8');
 var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
 
+
 var pl_list = playlist.split(/\r\n|\r|\n/);
 var coord_files = [], coord_n, sets = [];
 var maxDelay = 0, syncEvents = 0, syncTime = 0;
 
 //set at check_consistency()
-var finalFrame = 0, actualFrames = 0;
+var finalFrame = 0, actualFrames = 0, firstFrame = -1;
 //set at check_delays()
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
@@ -143,6 +144,9 @@ function check_consistency() {
     dela.forEach(function (element) {
       if (element[4][1] == proj[i][4][1]) {
         tmpFrn = element[4][1];
+        if(firstFrame==-1){
+          firstFrame = tmpFrn;
+        }
       }
     });
 
