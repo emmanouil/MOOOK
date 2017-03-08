@@ -15,8 +15,8 @@ var finalFrame = 0, actualFrames = 0;
 //set at check_delays()
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
-var state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
-var test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+var state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+var test_a1 = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 
 
 var states = [];
@@ -79,10 +79,10 @@ var b1 = 0, b2 = 0, a1 = 0, a2 = 0, a3 = 0;
 
 check_one();
 states.push(Object.assign({}, state));
-state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 check_two();
 states.push(Object.assign({}, state));
-state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 
 
 
@@ -91,7 +91,7 @@ for (var i = 0; i < proj.length; i++) {
   check_oneOLD(proj[i]);
 }
 states.push(Object.assign({}, state));
-state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 for (var i = 0; i < proj.length; i++) {
   check_three(proj[i]);
 }
@@ -101,7 +101,7 @@ states.push(state);
 
 check_two();
 states.push(Object.assign({}, state));
-state = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
+state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
 
 
 // check_two(proj[i]);
@@ -217,7 +217,7 @@ function check_delays() {
 /*
 function check_a1(p_in) {
   a1 =0;
-  test_a1 = { mxD: 0, mnD: 9000000, sync_events: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
+  test_a1 = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0};
   for (var i = 0; i < proj.length; i++) {
 
 
@@ -236,7 +236,7 @@ function check_one() {
     p_in = proj[i];
     for (var j = 0; j < dela.length; j++) {
       if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-        state.sync_events++;
+        state.matched_frames++;
         var tmp_d = dela[j][1][1] - p_in[1][1];
         if (tmp_d > bufD) {
           state.total_time = p_in[1][1] - proj[0][1][1];
@@ -257,7 +257,7 @@ function check_two() {
     p_in = proj[i];
     for (var j = 0; j < dela.length; j++) {
       if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-        state.sync_events++;
+        state.matched_frames++;
         var tmp_d = dela[j][1][1] - p_in[1][1];
         if (tmp_d > bufD) {
           state.rebuff_events++;
@@ -278,7 +278,7 @@ function check_oneOLD(p_in) {
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) { //check segment (with original)
       if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
-        state.sync_events++;
+        state.matched_frames++;
         var tmp_d = dela[j][1][1] - p_in[1][1];
         if (tmp_d > state.mxD) {
           state.mxD = tmp_d
@@ -304,7 +304,7 @@ function check_twoOLD(p_in) {
         continue;
       }
 
-      state.sync_events++;
+      state.matched_frames++;
       var tmp_d = dela[j][1][1] - p_in[1][1];
       if (tmp_d > state.mxD) {
         state.mxD = tmp_d
@@ -322,7 +322,7 @@ function check_three(p_in) {
   b2++;
   for (var j = 0; j < dela.length; j++) {
     if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {
-      state.sync_events++;
+      state.matched_frames++;
       if (parseInt(dela[j][27][1]) === parseInt(p_in[2][1])) {  //check segment (with original)
         state.same_seg++;
         return;
