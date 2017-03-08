@@ -176,7 +176,7 @@ function count_occurences() {
 
 function write(filename, data) {
   var file = NODE_PATH + filename;
-  fs.writeFileSync(file, data);
+  fs.writeFileSync(file, data, {encoding: null, flags: 'w'});
 }
 
 
