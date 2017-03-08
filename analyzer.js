@@ -186,6 +186,11 @@ function write(filename, data) {
   fs.writeFileSync(file, data, {encoding: null, flags: 'w'});
 }
 
+function append(filename, data){
+  var file = NODE_PATH + filename;
+  fs.appendFileSync(file, data, {encoding: null, flags: 'a'});
+}
+
 
 function check_delays() {
   var local_delay = 0;
