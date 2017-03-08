@@ -2,6 +2,8 @@ var path = require("path"),
   fs = require("fs");
 
 const NODE_PATH = 'x64/Debug/node_out/';
+var date = new Date();
+const RESULTS_FILE = date.getHours().toString()+date.getMinutes().toString()+date.getDate().toString()+date.getMonth().toString()+date.getFullYear().toString()+'.txt';
 
 var ex = fs.existsSync('x64/Debug/out/playlist.m3u8');
 var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
@@ -74,6 +76,7 @@ count_occurences();
 
 check_delays();
 
+write(RESULTS_FILE, 'InitialBuffer \t RebufTime \t RebuffEvents');
 //do the analysis of the coords
 var b1 = 0, b2 = 0, a1 = 0, a2 = 0, a3 = 0;
 
