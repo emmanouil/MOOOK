@@ -24,7 +24,7 @@ var test_a1 = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, total
 
 var states = [];
 var last_frame_time = 0, rebuff_time = 0, mxSegDiff = 0;
-var proj = [], dela = [];
+var proj = [], dela = [], dela_ordered = [];
 
 //read from playlist elements and push the coords set in coord_n[]
 for (var i = 0; i < pl_list.length; i++) {
@@ -67,6 +67,11 @@ for (var i = 0; i < sets.length; i++) {
     dela.push(cs);
   }
 }
+
+//bubble sort to delayed coords
+dela_ordered = dela.slice(0);
+bubbleSortArray(dela_ordered, 4); //sort according to FRN
+
 
 //check that everything is as supposed to be (regarding the dataset)
 var a_ok = check_consistency();
