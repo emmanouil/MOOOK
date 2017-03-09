@@ -445,3 +445,24 @@ function check_three(p_in) {
   }
   state.missed_frames++;
 }
+
+/**
+ * Sorts <array> according to <index>
+ * @param {Array} array to be sorted
+ * @param {Integer} index according to which be sorted
+ */
+function bubbleSortArray(array, index)
+{
+    var swapped;
+    do {
+        swapped = false;
+        for (var i=0; i < array.length-1; i++) {
+            if (array[i][index] > array[i+1][index]) {
+                var temp = array[i];
+                array[i] = array[i+1];
+                array[i+1] = temp;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}
