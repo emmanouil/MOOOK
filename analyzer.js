@@ -3,7 +3,7 @@ var path = require("path"),
 
 const NODE_PATH = 'x64/Debug/node_out/';
 var date = new Date();
-const RESULTS_FILE = date.getHours().toString()+date.getMinutes().toString()+date.getDate().toString()+date.getMonth().toString()+date.getFullYear().toString()+'.txt';
+const RESULTS_FILE = date.getHours().toString()+date.getMinutes().toString()+date.getDate().toString()+date.getMonth().toString()+date.getFullYear().toString();
 
 var ex = fs.existsSync('x64/Debug/out/playlist.m3u8');
 var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
@@ -77,7 +77,24 @@ count_occurences();
 
 check_delays();
 
-write(RESULTS_FILE, 'InitialBuffer \t RebufTime \t RebuffEvents');
+
+var test_results = [];
+for(var i =0; i<4000; i+=100){
+ test_results.push(check_eventsOoO(i));
+}
+
+write(RESULTS_FILE+'.txt', 'InitialBuffer \t RebufTime \t RebuffEvents \t RebuffPerSec \t InSyncPercent');
+for (var i = 0; i < test_results.length; i++) {
+  var t = test_results[i];
+  append(RESULTS_FILE+'.txt',
+    '\n' + t.initBuff + ' \t ' + t.rebuff_time.toFixed(1) + ' \t ' + t.rebuff_events+
+    ' \t '+(t.rebuffPerSec = (t.rebuff_events/(t.total_time/1000))) +
+    ' \t '+(t.inSyncPercent = 100 - (t.rebuff_time/t.total_time)*100));
+}
+
+append(RESULTS_FILE+'.txt', '\nDuration (ms): '+test_results[0].total_time+' Number of frames: '+actualFrames+' First Frame number: '+firstFrame+' Last Frame number: '+finalFrame);
+
+
 //do the analysis of the coords
 var b1 = 0, b2 = 0, a1 = 0, a2 = 0, a3 = 0;
 
@@ -221,6 +238,48 @@ function check_delays() {
 
 
 /**
+ * return a state object with out of synch missed_frames
+ * 
+ * @param {*int} Pb - the meta-buffer size (in ms)
+ */
+function check_eventsOoO(Pb){
+  var loc_state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0,
+     rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0,
+      initBuff: Pb, finalBuff: 0};
+  var bufD = Pb;
+  var t_inSync =0, f_inSync=0;
+  var t_smooth =0, f_smooth =0;
+  var local_time =0;
+
+  //TODO: check with length
+  for (var i = 0; i < actualFrames; i++) {
+    var p_in = proj[i];
+    local_time = p_in[1][1];
+    
+    iterate:
+    for (var j = 0; j < dela.length; j++) {
+      if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+        var d_in = dela[j];
+        loc_state.matched_frames++;
+        var tmp_d = d_in[1][1] - p_in[1][1];
+
+        if (tmp_d > bufD) {
+          loc_state.rebuff_events++;
+          loc_state.rebuff_time += tmp_d - bufD;
+          bufD = tmp_d;
+        }
+        break iterate;
+      }
+    }
+    loc_state.total_time = p_in[1][1] - proj[0][1][1];
+  }
+  loc_state.finalBuff = bufD;
+  return loc_state;
+}
+
+
+
+
  * First scenario:
  * 1s initial buffer
  * on event: rebuffer
