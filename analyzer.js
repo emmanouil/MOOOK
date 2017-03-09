@@ -82,9 +82,9 @@ count_occurences();
 
 check_delays();
 
-
+/*
 var test_results = [];
-for(var i =0; i<4000; i+=100){
+for(var i =1000; i<4000; i+=100){
  test_results.push(check_eventsOoO(i));
 }
 
@@ -98,11 +98,11 @@ for (var i = 0; i < test_results.length; i++) {
 }
 
 append(RESULTS_FILE+'.txt', '\nDuration (ms): '+test_results[0].total_time+' Number of frames: '+actualFrames+' First Frame number: '+firstFrame+' Last Frame number: '+finalFrame);
+*/
 
 
-
-test_results = [];
-for(var i =0; i<4000; i+=100){
+var test_results = [];
+for(var i =1000; i<4000; i+=100){
  test_results.push(check_eventsOrdered(i));
 }
 
@@ -119,6 +119,11 @@ for (var i = 0; i < test_results.length; i++) {
 
 
 append(RESULTS_FILE+'_io.txt', '\nDuration (ms): '+test_results[0].total_time+' Number of frames: '+actualFrames+' First Frame number: '+firstFrame+' Last Frame number: '+finalFrame);
+
+
+
+
+
 
 
 
@@ -282,7 +287,7 @@ function check_eventsOoO(Pb){
   for (var i = 0; i < actualFrames; i++) {
     var p_in = proj[i];
     local_time = p_in[1][1];
-    
+
     iterate:
     for (var j = 0; j < dela.length; j++) {
       if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) { //check frame
@@ -313,40 +318,107 @@ function check_eventsOoO(Pb){
  * 
  * @param {*int} Pb - the meta-buffer size (in ms)
  */
-function check_eventsOrdered(Pb){
-  var loc_state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0,
-     rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0,
-      initBuff: Pb, finalBuff: 0};
+function check_eventsOrdered(Pb) {
+  const VIDEO_BUFFER = 1000;
+  var loc_state = {
+    mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0,
+    rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0,
+    initBuff: Pb, finalBuff: 0
+  };
   var bufD = Pb;
-  var t_inSync =0, f_inSync=0;
-  var t_smooth =0, f_smooth =0;
-  var local_time =0;
+  var bufferE = [];
+  var t_inSync = 0, f_inSync = 0;
+  var t_smooth = 0, f_smooth = 0;
+  var tDiff = 0;
+  var normalTime = 0;
+  var local_time = parseFloat(proj[0][1][1]); //init timeline to first frame
+  var To = parseFloat(dela_ordered[0][1][1]) - parseFloat(dela_ordered[0][26][1]);
 
+
+  //TODO: To
   //TODO: check with length
   for (var i = 0; i < actualFrames; i++) {
+    //current on-time frame
+    proj[i][1][1] = parseFloat(proj[i][1][1]);
     var p_in = proj[i];
+    //update time diff from last displayed frame
+    tDiff = p_in[1][1] - local_time;
+    //update timeline indicator 
     local_time = p_in[1][1];
+    //update buffer
+    //bufD += tDiff;
+
+    //find delayed frame
     iterate:
     for (var j = 0; j < dela_ordered.length; j++) {
       if (parseInt(dela_ordered[j][4][1]) === parseInt(p_in[4][1])) { //check frame
+        dela_ordered[j][1][1] = parseFloat(dela_ordered[j][1][1]);
         var d_in = dela_ordered[j];
         loc_state.matched_frames++;
-        var tmp_d = d_in[1][1] - p_in[1][1];
+        var tmp_d = d_in[1][1] - local_time - bufD;
+
+        //buffer check
+        bufferE.push(d_in);
+        if (bufferE[0][1][1] > (local_time + bufD)) {
+          loc_state.missed_frames++;
+          loc_state.rebuff_time += tDiff;
+          if (bufferE.length == 1) {
+            loc_state.rebuff_events++;
+          }
+        } else {
+          var trim = 0;
+          bufferBreak:
+          for (var k = 0; k < bufferE.length; k++) {
+            /*
+            if (bufferE[bufferE.length - 1][4][1] == d_in[4][1]) {
+              bufferE = [];
+              f_inSync++;
+              break bufferBreak;
+            }*/
+            if (bufferE[k][1][1] <= (local_time + bufD)){
+              trim++;
+              if(trim == bufferE.length){
+                bufferE = [];
+                f_inSync++;
+                break bufferBreak;
+              }
+            } else {
+              break bufferBreak;
+            }
+          }
+          if (trim > 0) {
+            bufferE.splice(0, trim);
+            trim = 0;
+          }
+        }
+
+        /*
+        var tmp_d = d_in[1][1] - local_time - VIDEO_BUFFER;
 
         if (tmp_d > bufD) {
           loc_state.rebuff_events++;
-          loc_state.rebuff_time += tmp_d - bufD;
-          bufD = tmp_d;
+          loc_state.rebuff_time += (tmp_d - bufD);
+          screwedTime += tmp_d - bufD
+          bufD = 0;
+        }else{
+          bufD += tmp_d;
         }
+        */
         break iterate;
       }
     }
     loc_state.total_time = p_in[1][1] - proj[0][1][1];
   }
   loc_state.finalBuff = bufD;
+  console.log('synced frames: ' + f_inSync);
   return loc_state;
 }
 
+
+
+
+
+//function seek_catchup_frames
 
 
 /**
