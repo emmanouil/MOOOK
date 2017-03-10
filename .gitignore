@@ -12,7 +12,7 @@
 !Threads.h
 !server.js
 !tools.js
-!analyzer.js
+!analyzer[simulation].js
 
 #client-side
 !web-client/
