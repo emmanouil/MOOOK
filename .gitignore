@@ -13,6 +13,7 @@
 !server.js
 !tools.js
 !analyzer[simulation].js
+!analyzer[static].js
 
 #client-side
 !web-client/
