@@ -173,7 +173,7 @@ function appendNextMediaSegment(frag_resp) {
 
 //Content-loading functions
 function fetch(what, where, resp_type) {
-	console.log("fetching " + what);
+	console.log(v.currentTime+ " fetching " + what);
 	if (what.length < 2) {
 		console.log("erroneous request");
 	}
