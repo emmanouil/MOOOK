@@ -106,7 +106,7 @@ for(var i =1000; i<4000; i+=100){
  test_results.push(check_eventsOrdered(i));
 }
 
-write(RESULTS_FILE+'_io.txt', 'InitialBuffer \t RebufTime \t RebuffEvents \t RebuffPerSec \t InSyncPercent');
+write(RESULTS_FILE+'_io.txt', 'InitialBuffer \t RebufTime \t RebuffEvents \t RebuffPerSec \t SmoothPlay');
 for (var i = 0; i < test_results.length; i++) {
   var t = test_results[i];
   append(RESULTS_FILE+'_io.txt',
