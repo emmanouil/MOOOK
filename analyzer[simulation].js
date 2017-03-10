@@ -323,11 +323,12 @@ function check_eventsOrdered(Pb) {
   var loc_state = {
     mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0,
     rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0,
-    initBuff: Pb, finalBuff: 0
+    initBuff: Pb, finalBuff: 0, inSync: 0, synced: 0
   };
   var bufD = Pb;
   var bufferE = [];
-  var t_inSync = 0, f_inSync = 0;
+  var t_inSync = 0, f_inSync =0;
+  var f_synced = 0;
   var t_smooth = 0, f_smooth = 0;
   var tDiff = 0;
   var normalTime = 0;
@@ -377,9 +378,14 @@ function check_eventsOrdered(Pb) {
             }*/
             if (bufferE[k][1][1] <= (local_time + bufD)){
               trim++;
+              //check if in sync w/ video
+              if(parseInt(bufferE[k][4][1]) === parseInt(p_in[4][1])){
+                f_inSync++;
+              }
+              //check if we empty the buffer
               if(trim == bufferE.length){
                 bufferE = [];
-                f_inSync++;
+                f_synced++;
                 break bufferBreak;
               }
             } else {
@@ -410,7 +416,8 @@ function check_eventsOrdered(Pb) {
     loc_state.total_time = p_in[1][1] - proj[0][1][1];
   }
   loc_state.finalBuff = bufD;
-  console.log('synced frames: ' + f_inSync);
+  console.log('synced frames (smooth): ' + (loc_state.synced = f_synced));
+  console.log('in sync (with video) frames: ' + (loc_state.inSync = f_inSync));
   return loc_state;
 }
 
