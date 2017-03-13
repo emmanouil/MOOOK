@@ -1,7 +1,7 @@
 var path = require("path"),
   fs = require("fs");
 
-const NODE_PATH = 'x64/Debug/node_out/';
+const NODE_OUT_PATH = 'x64/Debug/node_out/';
 var date = new Date();
 const RESULTS_FILE = date.getHours().toString()+date.getMinutes().toString()+date.getDate().toString()+date.getMonth().toString()+date.getFullYear().toString();
 
@@ -231,12 +231,12 @@ function count_occurences() {
 
 
 function write(filename, data) {
-  var file = NODE_PATH + filename;
+  var file = NODE_OUT_PATH + filename;
   fs.writeFileSync(file, data, {encoding: null, flags: 'w'});
 }
 
 function append(filename, data){
-  var file = NODE_PATH + filename;
+  var file = NODE_OUT_PATH + filename;
   fs.appendFileSync(file, data, {encoding: null, flags: 'a'});
 }
 
