@@ -128,6 +128,41 @@ append(RESULTS_FILE + '_io.txt', '\nDuration (ms): ' + test_results[0].total_tim
 /*----------- ANALYSIS -----------*/
 /*---------------------------------*/
 
+/**
+ * return a state object with "late" frames_missed
+ * 
+ * frames_inTime - delayed frames where MetaFrameDelay (ms) < MetaBufferSize (ms)
+ * frames_missed - delayed frames where MetaFrameDelay (ms) > MetaBufferSize (ms)
+ * frames_total
+ * 
+ * @param {*int} Pb - the meta-buffer size (in ms)
+ */
+function measureMissedWithFixedVideoBuffer(Pb) {
+    var loc_state = {initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999};
+    var bufM = Pb;
+    loc_state.initBuff = Pb;
+
+  //TODO: To
+  //TODO: check with length
+  iterate:
+  for (var i = 0; i < actualFrames; i++) {
+      loc_state.frames_total++;
+    var p_in = proj[i];
+    var d_in = findDelayedByFrameNo(p_in[4][1]);
+    if(d_in == null){
+        console.log("[WARNING] frame "+p_in[4][1]+" NOT found");
+        break iterate;
+    }
+    if(d_in[26][1]>Pb){
+        loc_state.frames_missed++;
+    }else{
+        loc_state.frames_inTime++;
+    }
+  }
+
+  return loc_state;
+}
+
 
 
 /*-- helper analysis functions --*/
