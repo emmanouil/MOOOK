@@ -213,6 +213,18 @@ function check_delays() {
 
 /*----------- HELPER -----------*/
 /*---------------------------------*/
+/**
+ * Return the frame with the respective frame no. <frn>
+ * @param {int} frn to look up in the delayed frames
+ * @returns {Object} returns frame with <frn> number, null if frame not found
+ */
+function findDelayedByFrameNo(frn){
+    for(var i =0; i<dela.length; i++){
+        if(dela[i][4][1] == frn)
+            return dela[i];
+    }
+    return null;
+}
 
 /**
  * Sorts <array> according to <index>
