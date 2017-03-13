@@ -130,10 +130,12 @@ append(RESULTS_FILE + '_io.txt', '\nDuration (ms): ' + test_results[0].total_tim
 
 
 
+/*-- helper analysis functions --*/
 function check_consistency() {
     var initFrn = 0;
 
     for (var i = 0; i < proj.length; i++) {
+        proj[i][1][1] = parseFloat(proj[i][1][1]);  //time to float
         if (initFrn < proj[i][4][1]) {
             initFrn = proj[i][4][1];
         } else {
@@ -191,6 +193,9 @@ function check_delays() {
         }
 
         for (var j = 0; j < dela.length; j++) {
+            //TODO: move the two following lines where dela parsing occurs
+            dela[j][1][1] = parseFloat(dela[j][1][1]);
+            dela[j][26][1] = parseFloat(dela[j][26][1]);
             if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {  //check frame no.
                 local_delay = dela[j][1][1] - p_in[1][1];
                 break;
