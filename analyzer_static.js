@@ -163,6 +163,44 @@ function measureMissedWithFixedVideoBuffer(Pb) {
   return loc_state;
 }
 
+/**
+ * return a state object with "late" frames_missed (causing video to pause)
+ * 
+ * frames_inTime - delayed frames where MetaFrameDelay (ms) < VariableVideoBufferSize(ms) < MetaBufferSize (ms)
+ * frames_delayed - delayed frames where MetaFrameDelay (ms) > VariableVideoBufferSize(ms) < MetaBufferSize (ms)
+ * frames_missed - delayed frames where MetaFrameDelay (ms) > MetaBufferSize (ms)
+ * frames_total
+ * 
+ * @param {*int} Pb - the meta-buffer size (in ms)
+ */
+function measureMissedWithElasticVideoBuffer(Pb) {
+    var loc_state = {initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999};
+    var Vb = VIDEO_BUFFER_SIZE;
+    loc_state.initBuff = Pb;
+
+  //TODO: To
+  //TODO: check with length
+  iterate:
+  for (var i = 0; i < actualFrames; i++) {
+      loc_state.frames_total++;
+    var p_in = proj[i];
+    var d_in = findDelayedByFrameNo(p_in[4][1]);
+    if(d_in == null){
+        console.log("[WARNING] frame "+p_in[4][1]+" NOT found");
+        break iterate;
+    }
+    if(d_in[26][1]>Pb){
+        loc_state.frames_missed++;
+    }else if(d_in[26][1]>Vb){
+        loc_state.frames_delayed++;
+        Vb = d_in[26][1];
+    }else{
+        loc_state.frames_inTime++;
+    }
+  }
+
+  return loc_state;
+}
 
 
 /*-- helper analysis functions --*/
