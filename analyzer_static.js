@@ -95,25 +95,35 @@ count_occurences();
 check_delays();
 
 
-var test_results = [];
+//test scenario #1 - missed frames - fixed video buffer
+var test_resultsFixed = [];
 for (var i = 1000; i < 4000; i += 100) {
-    test_results.push(check_eventsOrdered(i));
+    test_resultsFixed.push(measureMissedWithFixedVideoBuffer(i));
+}
+
+//test scenario #2 - pause events (delayed frames) - elastic video buffer
+var test_resultsElastic = [];
+for (var i = 1000; i < 4000; i += 100) {
+    test_resultsElastic.push(measureMissedWithElasticVideoBuffer(i));
 }
 
 
-write(RESULTS_FILE + '_io.txt', 'InitialBuffer \t RebufTime \t RebuffEvents \t RebuffPerSec \t SmoothPlay');
-for (var i = 0; i < test_results.length; i++) {
-    var t = test_results[i];
-    append(RESULTS_FILE + '_io.txt',
-        '\n' + t.initBuff + ' \t ' + t.rebuff_time.toFixed(1) + ' \t ' + t.rebuff_events +
-        ' \t ' + (t.rebuffPerSec = (t.rebuff_events / (t.total_time / 1000))) +
-        ' \t ' + (t.inSyncPercent = 100 - (t.rebuff_time / t.total_time) * 100));
+write(RESULTS_FILE + '_FIXED_io.txt', 'InitialBuffer \t FramesInTime \t FramesMissed');
+for (var i = 0; i < test_resultsFixed.length; i++) {
+    var t = test_resultsFixed[i];
+    append(RESULTS_FILE + '_FIXED_io.txt',
+        '\n' + t.initBuff + ' \t ' + t.frames_inTime + ' \t ' + t.frames_missed);
 }
 
+write(RESULTS_FILE + '_ELASTIC_io.txt', 'InitialBuffer \t FramesInTime \t FramesDelayed \t FramesMissed');
+for (var i = 0; i < test_resultsElastic.length; i++) {
+    var t = test_resultsElastic[i];
+    append(RESULTS_FILE + '_ELASTIC_io.txt',
+        '\n' + t.initBuff + ' \t ' + t.frames_inTime + ' \t ' + t.frames_delayed+ ' \t ' + t.frames_missed);
+}
 
-
-
-append(RESULTS_FILE + '_io.txt', '\nDuration (ms): ' + test_results[0].total_time + ' Number of frames: ' + actualFrames + ' First Frame number: ' + firstFrame + ' Last Frame number: ' + finalFrame);
+console.log("done")
+//append(RESULTS_FILE + '_io.txt', '\nDuration (ms): ' + test_results[0].total_time + ' Number of frames: ' + actualFrames + ' First Frame number: ' + firstFrame + ' Last Frame number: ' + finalFrame);
 
 
 
