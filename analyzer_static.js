@@ -15,7 +15,7 @@ var coord_files = [], coord_n, sets = [];
 const VIDEO_BUFFER_SIZE = 1000; //in ms
 
 //set at check_consistency()
-var finalFrame = 0, actualFrames = 0, firstFrame = -1;
+var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, firstTimestamp = 0;
 //set at check_delays()
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
@@ -211,11 +211,13 @@ function parse_playlist() {
 
 function check_consistency() {
     var initFrn = 0;
+    var time = 0;
 
     for (var i = 0; i < proj.length; i++) {
         proj[i][1][1] = parseFloat(proj[i][1][1]);  //time to float
         if (initFrn < proj[i][4][1]) {
             initFrn = proj[i][4][1];
+
         } else {
             console.log('[WARNING] possible framecount error');
         }
@@ -227,14 +229,17 @@ function check_consistency() {
         dela.forEach(function (element) {
             if (element[4][1] == proj[i][4][1]) {
                 tmpFrn = element[4][1];
+                time = element[1][1];
                 if (firstFrame == -1) {
                     firstFrame = tmpFrn;
+                    firstTimestamp = time;
                 }
             }
         });
 
         if (tmpFrn == 0) {
             finalFrame = lastFrn;
+            finalTimeStamp = time;
             return true;
         } else {
             actualFrames++;
