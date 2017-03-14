@@ -6,79 +6,26 @@ var date = new Date();
 const RESULTS_FILE = date.getHours().toString() + date.getMinutes().toString() + date.getDate().toString() + date.getMonth().toString() + date.getFullYear().toString();
 
 var ex = fs.existsSync('x64/Debug/out/playlist.m3u8');
-var playlist = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8');
+var pl_list = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8').split(/\r\n|\r|\n/);
 
 
-var pl_list = playlist.split(/\r\n|\r|\n/);
 var coord_files = [], coord_n, sets = [];
+
+//constants
+const VIDEO_BUFFER_SIZE = 1000; //in ms
 
 //set at check_consistency()
 var finalFrame = 0, actualFrames = 0, firstFrame = -1;
 //set at check_delays()
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
-var state = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
-var test_a1 = { mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0 };
-
-
 var states = [];
-var last_frame_time = 0, rebuff_time = 0, mxSegDiff = 0;
 var proj = [], dela = [], dela_ordered = [];
 
 
 
-/*
-var loc_state = {
-    mxD: 0, mnD: 9000000, matched_frames: 0, rebuff_events: 0,
-    rebuff_time: 0, total_time: 0, missed_frames: 0, mxDseg: 0, seg_ups: 0, same_seg: 0,
-    initBuff: Pb, finalBuff: 0
-};
-*/
 
-
-
-
-//read from playlist elements and push the coords set in coord_n[]
-for (var i = 0; i < pl_list.length; i++) {
-    if (pl_list[i].endsWith('.m4s')) {
-        continue;
-    }
-    if (pl_list[i].endsWith('.txt')) {
-        coord_n = coord_files.push(fs.readFileSync(pl_list[i].toString(), 'utf8'));
-    } else {
-        console.log("[WARNING]playlist element " + pl_list[i] + " not parsed")
-    }
-}
-
-//itterate coord_n[] with discarding empty lines and pushing everything in sets[]
-for (var i = 0; i < coord_files.length; i++) {
-    var t_in = coord_files[i].split(/\r\n|\r|\n/);
-    for (var j = 0; j < t_in.length; j++) {
-        if (t_in[j].length < 4) {
-            continue;
-        } else {
-            sets.push(t_in[j].slice().toString());
-        }
-    }
-}
-
-
-//iterate sets and separate proj[] and dela[]
-var curr_seg = 0;
-for (var i = 0; i < sets.length; i++) {
-    var cs = sets[i].split(' ');
-    for (var j = 0; j < cs.length; j++) {
-        cs[j] = cs[j].split(':');
-    }
-
-    if (cs[0][1].toString().includes('PROJ')) {
-        proj.push(cs);
-        curr_seg = parseInt(cs[2][1]);
-    } else if (cs[0][1].toString().includes('DELA')) {
-        cs.push(["SEG_ORIG", curr_seg])
-        dela.push(cs);
-    }
-}
+parse_playlist();   //results in proj[] and dela[]
 
 //bubble sort to delayed coords
 dela_ordered = dela.slice(0);
@@ -119,7 +66,7 @@ write(RESULTS_FILE + '_ELASTIC_io.txt', 'InitialBuffer \t FramesInTime \t Frames
 for (var i = 0; i < test_resultsElastic.length; i++) {
     var t = test_resultsElastic[i];
     append(RESULTS_FILE + '_ELASTIC_io.txt',
-        '\n' + t.initBuff + ' \t ' + t.frames_inTime + ' \t ' + t.frames_delayed+ ' \t ' + t.frames_missed);
+        '\n' + t.initBuff + ' \t ' + t.frames_inTime + ' \t ' + t.frames_delayed + ' \t ' + t.frames_missed);
 }
 
 console.log("done")
@@ -148,29 +95,29 @@ console.log("done")
  * @param {*int} Pb - the meta-buffer size (in ms)
  */
 function measureMissedWithFixedVideoBuffer(Pb) {
-    var loc_state = {initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999};
+    var loc_state = { initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999 };
     var bufM = Pb;
     loc_state.initBuff = Pb;
 
-  //TODO: To
-  //TODO: check with length
-  iterate:
-  for (var i = 0; i < actualFrames; i++) {
-      loc_state.frames_total++;
-    var p_in = proj[i];
-    var d_in = findDelayedByFrameNo(p_in[4][1]);
-    if(d_in == null){
-        console.log("[WARNING] frame "+p_in[4][1]+" NOT found");
-        break iterate;
+    //TODO: To
+    //TODO: check with length
+    iterate:
+    for (var i = 0; i < actualFrames; i++) {
+        loc_state.frames_total++;
+        var p_in = proj[i];
+        var d_in = findDelayedByFrameNo(p_in[4][1]);
+        if (d_in == null) {
+            console.log("[WARNING] frame " + p_in[4][1] + " NOT found");
+            break iterate;
+        }
+        if (d_in[26][1] > Pb) {
+            loc_state.frames_missed++;
+        } else {
+            loc_state.frames_inTime++;
+        }
     }
-    if(d_in[26][1]>Pb){
-        loc_state.frames_missed++;
-    }else{
-        loc_state.frames_inTime++;
-    }
-  }
 
-  return loc_state;
+    return loc_state;
 }
 
 /**
@@ -184,36 +131,84 @@ function measureMissedWithFixedVideoBuffer(Pb) {
  * @param {*int} Pb - the meta-buffer size (in ms)
  */
 function measureMissedWithElasticVideoBuffer(Pb) {
-    var loc_state = {initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999};
+    var loc_state = { initBuf: 0, frames_inTime: 0, frames_missed: 0, frames_delayed: 0, frames_total: 0, dur_total: 0, dur_outSynch: 0, mxD: 0, mnD: 99999 };
     var Vb = VIDEO_BUFFER_SIZE;
     loc_state.initBuff = Pb;
 
-  //TODO: To
-  //TODO: check with length
-  iterate:
-  for (var i = 0; i < actualFrames; i++) {
-      loc_state.frames_total++;
-    var p_in = proj[i];
-    var d_in = findDelayedByFrameNo(p_in[4][1]);
-    if(d_in == null){
-        console.log("[WARNING] frame "+p_in[4][1]+" NOT found");
-        break iterate;
+    //TODO: To
+    //TODO: check with length
+    iterate:
+    for (var i = 0; i < actualFrames; i++) {
+        loc_state.frames_total++;
+        var p_in = proj[i];
+        var d_in = findDelayedByFrameNo(p_in[4][1]);
+        if (d_in == null) {
+            console.log("[WARNING] frame " + p_in[4][1] + " NOT found");
+            break iterate;
+        }
+        if (d_in[26][1] > Pb) {
+            loc_state.frames_missed++;
+        } else if (d_in[26][1] > Vb) {
+            loc_state.frames_delayed++;
+            Vb = d_in[26][1];
+        } else {
+            loc_state.frames_inTime++;
+        }
     }
-    if(d_in[26][1]>Pb){
-        loc_state.frames_missed++;
-    }else if(d_in[26][1]>Vb){
-        loc_state.frames_delayed++;
-        Vb = d_in[26][1];
-    }else{
-        loc_state.frames_inTime++;
-    }
-  }
 
-  return loc_state;
+    return loc_state;
 }
 
 
 /*-- helper analysis functions --*/
+function parse_playlist() {
+
+
+    //read from playlist elements and push the coords set in coord_n[]
+    for (var i = 0; i < pl_list.length; i++) {
+        if (pl_list[i].endsWith('.m4s')) {
+            continue;
+        }
+        if (pl_list[i].endsWith('.txt')) {
+            coord_n = coord_files.push(fs.readFileSync(pl_list[i].toString(), 'utf8'));
+        } else {
+            console.log("[WARNING]playlist element " + pl_list[i] + " not parsed")
+        }
+    }
+
+    //itterate coord_n[] with discarding empty lines and pushing everything in sets[]
+    for (var i = 0; i < coord_files.length; i++) {
+        var t_in = coord_files[i].split(/\r\n|\r|\n/);
+        for (var j = 0; j < t_in.length; j++) {
+            if (t_in[j].length < 4) {
+                continue;
+            } else {
+                sets.push(t_in[j].slice().toString());
+            }
+        }
+    }
+
+
+    //iterate sets and separate proj[] and dela[]
+    var curr_seg = 0;
+    for (var i = 0; i < sets.length; i++) {
+        var cs = sets[i].split(' ');
+        for (var j = 0; j < cs.length; j++) {
+            cs[j] = cs[j].split(':');
+        }
+
+        if (cs[0][1].toString().includes('PROJ')) {
+            proj.push(cs);
+            curr_seg = parseInt(cs[2][1]);
+        } else if (cs[0][1].toString().includes('DELA')) {
+            cs.push(["SEG_ORIG", curr_seg])
+            dela.push(cs);
+        }
+    }
+
+}
+
+
 function check_consistency() {
     var initFrn = 0;
 
@@ -306,9 +301,9 @@ function check_delays() {
  * @param {int} frn to look up in the delayed frames
  * @returns {Object} returns frame with <frn> number, null if frame not found
  */
-function findDelayedByFrameNo(frn){
-    for(var i =0; i<dela.length; i++){
-        if(dela[i][4][1] == frn)
+function findDelayedByFrameNo(frn) {
+    for (var i = 0; i < dela.length; i++) {
+        if (dela[i][4][1] == frn)
             return dela[i];
     }
     return null;
