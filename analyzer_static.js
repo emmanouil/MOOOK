@@ -25,6 +25,15 @@ var maxObservedDelay = 0, minObservedDelay = 99999;
 var states = [];
 var proj = [], dela = [], dela_ordered = [], video_ordered = [];
 
+function Buffer(initSize = 0){
+    this.contents = [];
+    this.index = 0;
+    this.sizeInFrames = 0;
+    this.sizeInSec = 0;
+    this.sizePlay = initSize;
+}
+
+
 
 
 parse_playlist();   //results in proj[] and dela[]
