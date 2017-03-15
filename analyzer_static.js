@@ -13,6 +13,8 @@ var coord_files = [], coord_n, sets = [];
 
 //constants
 const VIDEO_BUFFER_SIZE = 1000; //in ms
+const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
+const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
 const TEST_DURATION = 50000; //in ms
 
 //set at check_consistency()
@@ -45,13 +47,13 @@ generate_video_frames();
 
 //test scenario #1 - missed frames - fixed video buffer
 var test_resultsFixed = [];
-for (var i = 1000; i < 4000; i += 100) {
+for (var i = META_BUFFER_PLAY_THRESHOLD_MIN; i < META_BUFFER_PLAY_THRESHOLD_MAX; i += 100) {
     test_resultsFixed.push(measureMissedWithFixedVideoBuffer(i));
 }
 
 //test scenario #2 - pause events (delayed frames) - elastic video buffer
 var test_resultsElastic = [];
-for (var i = 1000; i < 4000; i += 100) {
+for (var i = META_BUFFER_PLAY_THRESHOLD_MIN; i < META_BUFFER_PLAY_THRESHOLD_MAX; i += 100) {
     test_resultsElastic.push(measureMissedWithElasticVideoBuffer(i));
 }
 
