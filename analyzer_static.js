@@ -13,6 +13,7 @@ var coord_files = [], coord_n, sets = [];
 
 //constants
 const VIDEO_BUFFER_SIZE = 1000; //in ms
+const TEST_DURATION = 50000; //in ms
 
 //set at check_consistency()
 var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, firstTimestamp = 0;
@@ -20,8 +21,7 @@ var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, first
 var maxObservedDelay = 0, minObservedDelay = 99999;
 
 var states = [];
-var proj = [], dela = [], dela_ordered = [];
-
+var proj = [], dela = [], dela_ordered = [], video_ordered = [];
 
 
 
@@ -40,6 +40,7 @@ console.log("actual frames " + actualFrames + " last frame no: " + finalFrame);
 count_occurences();
 
 check_delays();
+generate_video_frames();
 
 
 //test scenario #1 - missed frames - fixed video buffer
@@ -296,8 +297,13 @@ function check_delays() {
     }
 }
 
-
-
+function generate_video_frames(){
+    var frn_t = 0;
+    for(var i = Math.ceil(firstTimestamp); i<Math.floor(finalTimeStamp); i += 33){
+        video_ordered.push({TYPE: 'VID', T: i, FRN: frn_t});
+        frn_t++;
+    }
+}
 
 /*----------- HELPER -----------*/
 /*---------------------------------*/
