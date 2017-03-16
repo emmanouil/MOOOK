@@ -33,6 +33,8 @@ function Buffer(initSize = 0, type){
     this.sizePlay = initSize;
     this.status = 'NEW';    //NEW / PLAYING / STOPPED
     this.type = type;
+    this.t_low = 99999999999999;
+    this.t_high= 0;
 
     this.push = function(element){
        this.contents.push(element);
