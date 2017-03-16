@@ -37,6 +37,14 @@ function Buffer(initSize = 0, type){
     this.t_high= 0;
 
     this.push = function(element){
+        if(this.type == 'DELA'){
+            element.T = element[1][1] - element[26][1];
+            element.Td = element[1][1];
+        }else if(this.type == 'VID'){
+            //do nothing
+        }else{
+            console.log('[ERROR] unknown buffer element');
+        }
        this.contents.push(element);
     }
 }
