@@ -32,6 +32,9 @@ function Buffer(initSize = 0){
     this.sizeInSec = 0;
     this.sizePlay = initSize;
     this.status = 'NEW';    //NEW / PLAYING / STOPPED
+    this.push = function(element){
+            this.contents.push(element);
+    }
 }
 
 function Clock(initTime){
