@@ -335,6 +335,31 @@ function generate_video_frames(){
     }
 }
 
+function check_video_qeue(){
+    var i_out = [];
+    var out = [];
+    video_ordered.forEach(function(element, index){
+        if(element.T <= clock.timeNow) i_out.push(index);
+    });
+    i_out.forEach(function(element){
+        out.push(video_ordered.splice(element, 1));
+    })
+    return out;
+}
+
+function check_meta_qeue(){
+    var i_out = [];
+    var out = [];
+    dela_ordered.forEach(function(element, index){
+        if(element[1][1] <= clock.timeNow) i_out.push(index);
+    });
+    i_out.forEach(function(element){
+        out.push(dela_ordered.splice(element, 1));
+    })
+    return out;
+}
+
+
 /*----------- HELPER -----------*/
 /*---------------------------------*/
 /**
