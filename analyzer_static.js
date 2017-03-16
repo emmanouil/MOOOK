@@ -33,6 +33,19 @@ function Buffer(initSize = 0){
     this.sizePlay = initSize;
 }
 
+function Clock(initTime){
+    this.timeZero = initTime;
+    this.timeNow = initTime;
+    this.duration = 0;
+    this.tick = function(delta_in){
+        this.timeNow += delta_in;
+        this.duration = this.timeNow - this.timeZero;
+    }
+    this.reset = function(){
+    this.timeNow = this.timeZero;
+    this.duration = 0;
+    }
+}
 
 
 
@@ -52,6 +65,8 @@ count_occurences();
 
 check_delays();
 generate_video_frames();
+var clock = new Clock(video_ordered[0].T);
+
 
 
 //test scenario #1 - missed frames - fixed video buffer
