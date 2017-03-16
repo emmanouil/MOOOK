@@ -58,6 +58,7 @@ parse_playlist();   //results in proj[] and dela[]
 //bubble sort to delayed coords
 dela_ordered = dela.slice(0);
 bubbleSortArray(dela_ordered, 4); //sort according to FRN
+firstTimestamp = proj[0][1][1];
 
 
 //check that everything is as supposed to be (regarding the dataset)
@@ -263,7 +264,6 @@ function check_consistency() {
                 time = element[1][1];
                 if (firstFrame == -1) {
                     firstFrame = tmpFrn;
-                    firstTimestamp = time;
                 }
             }
         });
