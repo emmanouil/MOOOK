@@ -25,15 +25,17 @@ var maxObservedDelay = 0, minObservedDelay = 99999;
 var states = [];
 var proj = [], dela = [], dela_ordered = [], video_ordered = [];
 
-function Buffer(initSize = 0){
+function Buffer(initSize = 0, type){
     this.contents = [];
     this.index = 0;
     this.sizeInFrames = 0;
     this.sizeInSec = 0;
     this.sizePlay = initSize;
     this.status = 'NEW';    //NEW / PLAYING / STOPPED
+    this.type = type;
+
     this.push = function(element){
-            this.contents.push(element);
+       this.contents.push(element);
     }
 }
 
