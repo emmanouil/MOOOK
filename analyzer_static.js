@@ -47,6 +47,16 @@ function Buffer(initSize = 0, type){
         }
        this.contents.push(element);
     }
+
+    this.update = function(){
+        this.contents.forEach(function(element){
+            if(element.T<this.t_low) this.t_low = element.T;
+            if(element.T>this.t_high) this.t_high = element.T;
+            this.sizeInSec = this.t_high - this.t_low;
+            this.sizeInFrames = this.contents.length;
+        }, this)
+    }
+
 }
 
 function Clock(initTime){
