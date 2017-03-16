@@ -31,6 +31,7 @@ function Buffer(initSize = 0){
     this.sizeInFrames = 0;
     this.sizeInSec = 0;
     this.sizePlay = initSize;
+    this.status = 'NEW';    //NEW / PLAYING / STOPPED
 }
 
 function Clock(initTime){
