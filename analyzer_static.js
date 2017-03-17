@@ -338,24 +338,6 @@ function check_consistency() {
     return false;
 }
 
-
-function count_occurences() {
-    var delays = [];
-    for (var i = 0; i < 50; i++) {
-        delays.push(parseInt(0));
-    }
-    for (var i = 0; i < actualFrames; i++) {
-        var slot = parseInt((dela[i][26][1]) / 100);
-        delays[slot]++;
-    }
-    var tost = '';
-    for (var i = 0; i < delays.length; i++) {
-        tost += delays[i].toString() + '\n';
-    }
-    //write('calcu.txt',tost);
-    return;
-}
-
 function check_delays() {
     minObservedDelay =  maxObservedDelay = first_dela_frame[26][1];
     for (var i = 0; i < dela_ordered.length; i++) {
