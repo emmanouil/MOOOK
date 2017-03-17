@@ -67,12 +67,17 @@ function Buffer(initSize = 0, type){
             }, this);
         }
         
+        //TODO validate consectuive elements
+        //consider only consecutive elements
+        this.t_low = this.t_high; //reset t_low in case we popped frames
         this.contents.forEach(function(element){
-            if(element.T<this.t_low) this.t_low = element.T;
-            if(element.T>this.t_high) this.t_high = element.T;
-            this.sizeInSec = this.t_high - this.t_low;
-            this.sizeInFrames = this.contents.length;
-        }, this)
+            if(element.valid){
+                if(element.T<this.t_low) this.t_low = element.T;
+                if(element.T>this.t_high) this.t_high = element.T;
+                this.sizeInSec = this.t_high - this.t_low;
+                this.sizeInFrames = this.contents.length;
+            }
+        }, this);
     }
 
 }
