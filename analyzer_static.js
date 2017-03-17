@@ -27,6 +27,7 @@ var proj = [], dela = [], dela_ordered = [], video_ordered = [];
 
 function Buffer(initSize = 0, type){
     this.contents = [];
+    this.contents.sorted = false;
     this.index = 0;
     this.sizeInFrames = 0;
     this.sizeInSec = 0;
@@ -49,6 +50,8 @@ function Buffer(initSize = 0, type){
     }
 
     this.update = function(){
+            if(this.contents.sorted == false && this.contents.length > 2)
+                bubbleSortArray(this.contents, 4);
         this.contents.forEach(function(element){
             if(element.T<this.t_low) this.t_low = element.T;
             if(element.T>this.t_high) this.t_high = element.T;
@@ -404,6 +407,9 @@ function findDelayedByFrameNo(frn) {
  */
 function bubbleSortArray(array, index) {
     var swapped;
+    if(typeof(array.sorted) != 'undefined')
+        array.sorted = true;
+
     do {
         swapped = false;
         for (var i = 0; i < array.length - 1; i++) {
