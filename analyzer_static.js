@@ -38,20 +38,35 @@ function Buffer(initSize = 0, type){
     this.t_high= 0;
 
     this.push = function(element){
+        element = element[0];
         if(this.type == 'DELA'){
             element.T = element[1][1] - element[26][1];
             element.Td = element[1][1];
+            element.valid = false;
         }else if(this.type == 'VID'){
+            element.valid = true;
             //do nothing
         }else{
             console.log('[ERROR] unknown buffer element');
         }
        this.contents.push(element);
+       this.contents.sorted = false;
     }
 
     this.update = function(){
+        if(this.type=='DELA'){
             if(this.contents.sorted == false && this.contents.length > 2)
                 bubbleSortArray(this.contents, 4);
+            this.contents.forEach(function(element){
+                if( (element.valid == false) && proj[0][4][1] == element[4][1]){
+                    element.valid = true;
+                    proj.splice(0,1);
+                }else{
+                    element.valid = false;
+                }
+            }, this);
+        }
+        
         this.contents.forEach(function(element){
             if(element.T<this.t_low) this.t_low = element.T;
             if(element.T>this.t_high) this.t_high = element.T;
