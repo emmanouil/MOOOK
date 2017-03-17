@@ -298,46 +298,6 @@ function parse_playlist() {
 
 }
 
-
-function check_consistency() {
-    var initFrn = 0;
-    var time = 0;
-
-    for (var i = 0; i < proj.length; i++) {
-        proj[i][1][1] = parseFloat(proj[i][1][1]);  //time to float
-        if (initFrn < proj[i][4][1]) {
-            initFrn = proj[i][4][1];
-
-        } else {
-            console.log('[WARNING] possible framecount error');
-        }
-    }
-
-    var lastFrn = 0;
-    for (var i = 0; i < proj.length; i++) {
-        var tmpFrn = 0;
-        dela.forEach(function (element) {
-            if (element[4][1] == proj[i][4][1]) {
-                tmpFrn = element[4][1];
-                time = element[1][1];
-                if (firstFrame == -1) {
-                    firstFrame = tmpFrn;
-                }
-            }
-        });
-
-        if (tmpFrn == 0) {
-            finalFrame = lastFrn;
-            finalTimeStamp = time;
-            return true;
-        } else {
-            actualFrames++;
-            lastFrn = tmpFrn;
-        }
-    }
-    return false;
-}
-
 function check_delays() {
     minObservedDelay =  maxObservedDelay = first_dela_frame[26][1];
     for (var i = 0; i < dela_ordered.length; i++) {
@@ -345,11 +305,9 @@ function check_delays() {
         if (minObservedDelay > local_delay) {
             minObservedDelay = local_delay;
         }
-
         if (maxObservedDelay < local_delay) {
             maxObservedDelay = local_delay;
         }
-
     }
 }
 
