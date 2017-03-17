@@ -53,16 +53,15 @@ function Buffer(initSize = 0, type){
        this.contents.sorted = false;
     }
 
+
     this.update = function(){
         if(this.type=='DELA'){
             if(this.contents.sorted == false && this.contents.length > 2)
                 bubbleSortArray(this.contents, 4);
             this.contents.forEach(function(element){
-                if( (element.valid == false) && proj[0][4][1] == element[4][1]){
+                if( (element.valid == false) && dela_ordered_tmp[this.index][4][1] == element[4][1]){
                     element.valid = true;
-                    proj.splice(0,1);
-                }else{
-                    element.valid = false;
+                    this.index++;
                 }
             }, this);
         }
@@ -103,15 +102,23 @@ parse_playlist();   //results in proj[] and dela[]
 //bubble sort to delayed coords
 dela_ordered = dela.slice(0);
 bubbleSortArray(dela_ordered, 4); //sort according to FRN
-firstTimestamp = proj[0][1][1];
 
 
 //check that everything is as supposed to be (regarding the dataset)
+//TODO check from here
+var last_dela_frame = dela_ordered[dela_ordered.length-1];
+var first_dela_frame = dela_ordered[0]
+firstTimestamp = first_dela_frame[28][1];
+finalTimeStamp = last_dela_frame[28][1];
+actualFrames = dela_ordered.length;
+finalFrame = last_dela_frame[4][1];
+
+/*
 var a_ok = check_consistency();
 console.log((a_ok ? '[A-OK]' : '[WARNING] possible error'));
 console.log("actual frames " + actualFrames + " last frame no: " + finalFrame);
-
-count_occurences();
+*/
+//TODO to here
 
 check_delays();
 generate_video_frames();
@@ -350,23 +357,9 @@ function count_occurences() {
 }
 
 function check_delays() {
-    var local_delay = 0;
-    for (var i = 0; i < actualFrames; i++) {
-        p_in = proj[i];
-        if (p_in[4][1] > finalFrame) {
-            console.log("[ERROR] more frames than not");
-        }
-
-        for (var j = 0; j < dela.length; j++) {
-            //TODO: move the two following lines where dela parsing occurs
-            dela[j][1][1] = parseFloat(dela[j][1][1]);
-            dela[j][26][1] = parseFloat(dela[j][26][1]);
-            if (parseInt(dela[j][4][1]) === parseInt(p_in[4][1])) {  //check frame no.
-                local_delay = dela[j][1][1] - p_in[1][1];
-                break;
-            }
-        }
-
+    minObservedDelay =  maxObservedDelay = first_dela_frame[26][1];
+    for (var i = 0; i < dela_ordered.length; i++) {
+        var local_delay = dela_ordered[i][26][1];
         if (minObservedDelay > local_delay) {
             minObservedDelay = local_delay;
         }
