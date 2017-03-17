@@ -275,10 +275,16 @@ function parse_playlist() {
         }
 
         if (cs[0][1].toString().includes('PROJ')) {
+            cs[4][1] = parseInt(cs[4][1]);
+            cs[2][1] = parseInt(cs[2][1]);
             proj.push(cs);
-            curr_seg = parseInt(cs[2][1]);
+            curr_seg = cs[2][1]
         } else if (cs[0][1].toString().includes('DELA')) {
             cs.push(["SEG_ORIG", curr_seg])
+            cs[4][1] = parseInt(cs[4][1]);
+            cs[1][1] = parseInt(cs[1][1]);
+            cs[26][1] = parseInt(cs[26][1]);
+            cs.push(["T_D", cs[1][1]-cs[26][1]])
             dela.push(cs);
         }
     }
