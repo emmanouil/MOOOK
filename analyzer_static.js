@@ -38,7 +38,6 @@ function Buffer(initSize = 0, type){
     this.t_high= 0;
 
     this.push = function(element){
-        element = element[0];
         if(this.type == 'DELA'){
             element.T = element[1][1] - element[26][1];
             element.Td = element[1][1];
@@ -326,7 +325,7 @@ function check_video_qeue(){
         if(element.T <= clock.timeNow) i_out.push(index);
     });
     i_out.forEach(function(element){
-        out.push(video_ordered.splice(element, 1));
+        out.push(video_ordered.splice(element, 1)[0]);
     })
     return out;
 }
@@ -338,7 +337,7 @@ function check_meta_qeue(){
         if(element[1][1] <= clock.timeNow) i_out.push(index);
     });
     i_out.forEach(function(element){
-        out.push(dela_ordered.splice(element, 1));
+        out.push(dela_ordered.splice(element, 1)[0]);
     })
     return out;
 }
