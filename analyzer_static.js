@@ -16,6 +16,7 @@ const VIDEO_BUFFER_SIZE = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
 const TEST_DURATION = 50000; //in ms
+const CLOCK_RESOLUTION = 10; //in ms
 
 //set at check_consistency()
 var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, firstTimestamp = 0;
@@ -43,70 +44,72 @@ function Buffer(initSize = 0, type){
         }else if(this.type == 'VID'){
             element.valid = true;
             //do nothing
-        }else{
+        } else {
             console.log('[ERROR] unknown buffer element');
         }
-       this.contents.push(element);
-       this.contents.sorted = false;
+        this.contents.push(element);
+        this.contents.sorted = false;
     }
 
-    this.update = function(){
+    this.update = function () {
         this.validate();
         this.updateAttrs();
         this.updateStatus();
     }
 
-    this.updateAttrs = function(){
+
+    this.validate = function () {
+        //validate META frames
+        if (this.type == 'DELA') {
+            var updating = true;
+            while (updating) {
+                updating = false;
+                this.contents.forEach(function (element) {
+                    if (dela_list[dela_list_index].FRN == element.FRN) {
+                        dela_list_index++;
+                        updating = true;
+                        element.valid = true;
+                    }
+                });
+            }
+        }
+    }
+
+    this.updateAttrs = function () {
 
         this.t_low = 99999999999999; //reset t_low in case we popped frames
-        this.contents.forEach(function(element){
-            if(element.valid){
-                if(element.T<this.t_low) this.t_low = element.T;
-                if(element.T>this.t_high) this.t_high = element.T;
+        this.contents.forEach(function (element) {
+            if (element.valid) {
+                if (element.T < this.t_low) this.t_low = element.T;
+                if (element.T > this.t_high) this.t_high = element.T;
                 this.sizeInSec = this.t_high - this.t_low;
                 this.sizeInFrames = this.contents.length;
             }
         }, this);
     }
 
-this.updateStatus = function(){
-            //update buffer status
-        if(this.status == 'NEW' && this.sizeInSec >= this.sizePlay){
+    this.updateStatus = function () {
+        //update buffer status
+        if (this.status == 'NEW' && this.sizeInSec >= this.sizePlay) {
             this.status = 'PLAYING';
-            console.log(this.type+' buffer is playing  - time:'+clock.timeNow);
-        }else if(this.status == 'PLAYING' && (this.contents.length== 0 || this.contents[0].valid == false)){
+            console.log(this.type + ' buffer is playing  - time:' + clock.timeNow);
+        } else if (this.status == 'PLAYING' && (this.contents.length == 0 || this.contents[0].valid == false)) {
             this.status = 'STOPPED';
-            console.log(this.type+' buffer is stopping  - time:'+clock.timeNow);
-        }else if(this.status == 'STOPPED'&& (this.contents.length > 0 && this.contents[0].valid == true)){
+            console.log(this.type + ' buffer is stopping  - time:' + clock.timeNow);
+        } else if (this.status == 'STOPPED' && (this.contents.length > 0 && this.contents[0].valid == true)) {
             this.status = 'PLAYING';
-            console.log('playing '+this.type)
-        }
-}
-
-    this.validate = function(){
-        //validate META frames
-        if(this.type=='DELA'){
-                var updating = true;
-                while (updating) {
-                    updating = false;
-                    this.contents.forEach(function (element) {
-                        if (dela_list[dela_list_index].FRN == element.FRN) {
-                            dela_list_index++;
-                            updating = true;
-                            element.valid = true;
-                        }
-                    });
-                }
+            console.log('playing ' + this.type)
         }
     }
 
 
-    this.use = function(clock){
-        this.contents.forEach(function(element, index, array){
-            if(clock.timeNow >= (element.T+this.sizePlay) && this.status == 'PLAYING'){
-               // console.log(this.type+' frame removed. new size: '+(array.length-1));
+
+    this.use = function (clock) {
+        this.contents.forEach(function (element, index, array) {
+            if (clock.timeNow >= (element.T + this.sizePlay) && this.status == 'PLAYING') {
+                // console.log(this.type+' frame removed. new size: '+(array.length-1));
                 array.splice(index, 1)
-//                console.log('removed '+array.splice(index, 1)+' at time '+clock.timeNow);
+                //                console.log('removed '+array.splice(index, 1)+' at time '+clock.timeNow);
                 this.update();
             }
         }, this);
