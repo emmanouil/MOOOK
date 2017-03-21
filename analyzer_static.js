@@ -364,6 +364,15 @@ function check_video_qeue(){
     return out;
 }
 
+function check_meta_list(){
+    dela_list.forEach(function(element, index){
+        if(element.T_arrival <= clock.timeNow){
+            dela_list[index].contents = findDelayedByFrameNo(element.FRN);
+        }
+    });
+}
+
+/*
 function check_meta_qeue(){
     var i_out = [];
     var out = [];
@@ -375,7 +384,7 @@ function check_meta_qeue(){
     })
     return out;
 }
-
+*/
 
 /*----------- HELPER -----------*/
 /*---------------------------------*/
