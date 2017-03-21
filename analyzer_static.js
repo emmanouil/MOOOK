@@ -39,8 +39,6 @@ function Buffer(initSize = 0, type){
 
     this.push = function(element){
         if(this.type == 'DELA'){
-            element.T = element[1][1] - element[26][1];
-            element.Td = element[1][1];
             element.valid = false;
         }else if(this.type == 'VID'){
             element.valid = true;
@@ -57,6 +55,10 @@ function Buffer(initSize = 0, type){
         this.updateAttrs();
         this.updateStatus();
     }
+
+    this.updateAttrs = function(){
+
+        this.t_low = 99999999999999; //reset t_low in case we popped frames
         this.contents.forEach(function(element){
             if(element.valid){
                 if(element.T<this.t_low) this.t_low = element.T;
