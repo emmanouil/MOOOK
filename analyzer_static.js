@@ -52,28 +52,60 @@ function Buffer(initSize = 0, type){
        this.contents.sorted = false;
     }
 
-
     this.update = function(){
-        if(this.type=='DELA'){
-            if(this.contents.sorted == false && this.contents.length > 2)
-                bubbleSortArray(this.contents, 4);
-            this.contents.forEach(function(element){
-                if( (element.valid == false) && dela_ordered_tmp[this.index][4][1] == element[4][1]){
-                    element.valid = true;
-                    this.index++;
-                }
-            }, this);
-        }
-        
-        //TODO validate consectuive elements
-        //consider only consecutive elements
-        this.t_low = this.t_high; //reset t_low in case we popped frames
+        this.validate();
+        this.updateAttrs();
+        this.updateStatus();
+    }
         this.contents.forEach(function(element){
             if(element.valid){
                 if(element.T<this.t_low) this.t_low = element.T;
                 if(element.T>this.t_high) this.t_high = element.T;
                 this.sizeInSec = this.t_high - this.t_low;
                 this.sizeInFrames = this.contents.length;
+            }
+        }, this);
+    }
+
+this.updateStatus = function(){
+            //update buffer status
+        if(this.status == 'NEW' && this.sizeInSec >= this.sizePlay){
+            this.status = 'PLAYING';
+            console.log(this.type+' buffer is playing  - time:'+clock.timeNow);
+        }else if(this.status == 'PLAYING' && (this.contents.length== 0 || this.contents[0].valid == false)){
+            this.status = 'STOPPED';
+            console.log(this.type+' buffer is stopping  - time:'+clock.timeNow);
+        }else if(this.status == 'STOPPED'&& (this.contents.length > 0 && this.contents[0].valid == true)){
+            this.status = 'PLAYING';
+            console.log('playing '+this.type)
+        }
+}
+
+    this.validate = function(){
+        //validate META frames
+        if(this.type=='DELA'){
+                var updating = true;
+                while (updating) {
+                    updating = false;
+                    this.contents.forEach(function (element) {
+                        if (dela_list[dela_list_index].FRN == element.FRN) {
+                            dela_list_index++;
+                            updating = true;
+                            element.valid = true;
+                        }
+                    });
+                }
+        }
+    }
+
+
+    this.use = function(clock){
+        this.contents.forEach(function(element, index, array){
+            if(clock.timeNow >= (element.T+this.sizePlay) && this.status == 'PLAYING'){
+               // console.log(this.type+' frame removed. new size: '+(array.length-1));
+                array.splice(index, 1)
+//                console.log('removed '+array.splice(index, 1)+' at time '+clock.timeNow);
+                this.update();
             }
         }, this);
     }
