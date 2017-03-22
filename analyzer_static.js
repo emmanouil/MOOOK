@@ -427,6 +427,30 @@ function bubbleSortArray(array, index) {
     } while (swapped);
 }
 
+/**
+ * Sorts <array> according to property
+ * @param {Array} array to be sorted
+ * @param {String} property according to which be sorted
+ */
+function bubbleSortArrayByProperty(array, property) {
+    var swapped;
+    if(typeof(array.sorted) != 'undefined')
+        array.sorted = true;
+
+    do {
+        swapped = false;
+        for (var i = 0; i < array.length - 1; i++) {
+            if (array[i][property] > array[i + 1][property]) {
+                var temp = array[i];
+                array[i] = array[i + 1];
+                array[i + 1] = temp;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}
+
+
 function write(filename, data) {
     var file = NODE_OUT_PATH + filename;
     fs.writeFileSync(file, data, { encoding: null, flags: 'w' });
