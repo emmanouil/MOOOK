@@ -37,6 +37,7 @@ function Buffer(initSize = 0, type){
     this.type = type;
     this.t_low = 99999999999999;
     this.t_high= 0;
+    this.has_valid = false;
 
     this.push = function(element){
         if(this.type == 'DELA'){
@@ -54,6 +55,7 @@ function Buffer(initSize = 0, type){
     this.update = function () {
         this.validate();
         this.updateAttrs();
+        this.hasValid();
         this.updateStatus();
     }
 
@@ -87,6 +89,13 @@ function Buffer(initSize = 0, type){
                 this.sizeInSec = this.t_high - this.t_low;
                 this.sizeInFrames = this.contents.length;
             }
+        }, this);
+    }
+
+    this.hasValid = function(){
+        this.contents.forEach(function (elem){
+            if(elem.valid)
+                this.has_valid = true;
         }, this);
     }
 
