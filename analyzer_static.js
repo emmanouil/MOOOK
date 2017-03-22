@@ -34,6 +34,8 @@ function Buffer(initSize = 0, type){
     this.sizeInSec = 0;
     this.sizePlay = initSize;
     this.status = 'NEW';    //NEW / PLAYING / STOPPED
+    this.lastBuffStart = 0;
+    this.lastBuffStop = 0;
     this.type = type;
     this.t_low = 99999999999999;
     this.t_high= 0;
@@ -81,6 +83,8 @@ function Buffer(initSize = 0, type){
 
     this.updateAttrs = function () {
 
+        if(this.contents.length == 0) return;
+
         this.t_low = 99999999999999; //reset t_low in case we popped frames
         this.contents.forEach(function (element) {
             if (element.valid) {
@@ -103,12 +107,16 @@ function Buffer(initSize = 0, type){
         //update buffer status
         if (this.status == 'NEW' && this.sizeInSec >= this.sizePlay) {
             this.status = 'PLAYING';
+            this.sizePlay = clock.timeNow - clock.timeZero;
             console.log(this.type + ' buffer is playing  - time:' + clock.timeNow);
         } else if (this.status == 'PLAYING' && (this.contents.length == 0 || this.contents[0].valid == false)) {
             this.status = 'STOPPED';
+            this.lastBuffStart = clock.timeNow;
             console.log(this.type + ' buffer is stopping  - time:' + clock.timeNow);
-        } else if (this.status == 'STOPPED' && (this.contents.length > 0 && this.contents[0].valid == true)) {
+        } else if (this.status == 'STOPPED' && ((this.contents.length > 0) && this.has_valid)) {
             this.status = 'PLAYING';
+            this.lastBuffStop = clock.timeNow;
+            this.sizePlay = this.lastBuffStop - this.lastBuffStart
             console.log('playing ' + this.type)
         }
     }
