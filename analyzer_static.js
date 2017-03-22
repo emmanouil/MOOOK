@@ -61,6 +61,8 @@ function Buffer(initSize = 0, type){
     this.validate = function () {
         //validate META frames
         if (this.type == 'DELA') {
+            if(this.contents.length > 1)
+                bubbleSortArrayByProperty(this.contents, 'FRN');
             var updating = true;
             while (updating) {
                 updating = false;
