@@ -15,7 +15,7 @@ var coord_files = [], coord_n, sets = [];
 const VIDEO_BUFFER_SIZE = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
-const TEST_DURATION = 50000; //in ms
+const TEST_DURATION = 40000; //in ms
 const CLOCK_RESOLUTION = 10; //in ms
 
 //set at check_consistency()
@@ -112,26 +112,35 @@ function Buffer(initSize = 0, type){
         } else if (this.status == 'PLAYING' && (this.contents.length == 0 || this.contents[0].valid == false)) {
             this.status = 'STOPPED';
             this.lastBuffStart = clock.timeNow;
-            console.log(this.type + ' buffer is stopping  - time:' + clock.timeNow);
+            console.log(this.type + ' buffer is stopping  - time:' + clock.timeNow + '   size in ms '+this.sizeInSec);
         } else if (this.status == 'STOPPED' && ((this.contents.length > 0) && this.has_valid)) {
             this.status = 'PLAYING';
             this.lastBuffStop = clock.timeNow;
-            this.sizePlay = this.lastBuffStop - this.lastBuffStart
-            console.log('playing ' + this.type)
+            this.sizePlay = this.lastBuffStop - this.lastBuffStart;
+            console.log(this.type + ' buffer is playing ' + clock.timeNow + '   size in ms '+this.sizeInSec);
         }
     }
 
-
-
     this.use = function (clock) {
-        this.contents.forEach(function (element, index, array) {
-            if (clock.timeNow >= (element.T + this.sizePlay) && this.status == 'PLAYING') {
-                // console.log(this.type+' frame removed. new size: '+(array.length-1));
-                array.splice(index, 1)
-                //                console.log('removed '+array.splice(index, 1)+' at time '+clock.timeNow);
-                this.update();
+        var removed = true;
+        while(removed){
+            removed = false;
+            for(var i = 0; i< this.contents.length ; i++){
+                element = this.contents[i];
+                if (clock.timeNow >= (element.T + this.sizePlay) && this.status == 'PLAYING' && element.valid) {
+                    // console.log(this.type+' frame removed. new size: '+(array.length-1));
+                    if(this.type == 'DELA'){
+                        //console.log(clock.timeNow+ '   Tdisp '+element.T_display+'   FRN '+ element.FRN + 'removed ')
+                                           // console.log(clock.timeNow+' instead of '+element.T+' with sizeplay '+this.sizePlay+'    is out '+element.FRN)
+                    }
+                    this.contents.splice(i, 1);
+                    this.has_valid = false;
+                    removed = true;
+                    break;
+                }
             }
-        }, this);
+        }
+                    this.update();
     }
 
 }
@@ -162,7 +171,7 @@ bubbleSortArray(dela_ordered, 4); //sort according to FRN
 //check that everything is as supposed to be (regarding the dataset)
 //TODO check from here
 var last_dela_frame = dela_ordered[dela_ordered.length-1];
-var first_dela_frame = dela_ordered[0]
+var first_dela_frame = dela_ordered[0];
 firstTimestamp = first_dela_frame[28][1];
 finalTimeStamp = last_dela_frame[28][1];
 actualFrames = dela_ordered.length;
@@ -179,6 +188,96 @@ check_delays();
 generate_video_frames();
 var clock = new Clock(video_ordered[0].T);
 
+var test_buffer = [];
+for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRESHOLD_MAX; i_test += 100) {
+    //for resetting qeues
+    var video_ordered_tmp = video_ordered.slice(0);
+    var dela_ordered_tmp = dela_ordered.slice(0);
+    var proj_tmp = proj.slice(0);
+
+    var dela_list = [];
+    var dela_list_index = 0;
+    for(var i =0; i<dela_ordered.length; i++){
+        var elem = dela_ordered[i];
+        var item = {};
+        item.T_arrival = elem[1][1];
+        item.T_display = elem[28][1];
+        item.T = item.T_display;    //TODO remove this and update it on video frames
+        item.FRN = elem[4][1];
+        item.contents = -1; //empty
+        item.inBuffer = false;
+        dela_list.push(item);
+    }
+
+    var video_buffer = new Buffer(VIDEO_BUFFER_SIZE, 'VID');
+    var meta_buffer = new Buffer(i_test, 'DELA');
+
+    var v_s = 'NEW', v_m = 'NEW';
+
+    write(RESULTS_FILE + '_FIXED_io_'+i_test+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
+
+    while(clock.duration < TEST_DURATION){
+        //FIRST do the video
+        var vid_to_B = check_video_qeue();        //check for new frames
+        if(typeof vid_to_B != 'undefined') vid_to_B.forEach(function(element){video_buffer.push(element);});    //push to buffer
+        video_buffer.update();  //update buffer status and attributes
+        video_buffer.use(clock);    //use frames
+
+
+//delete this test
+        for (var j = 0; j < meta_buffer.contents.length; j++){
+            var found = false;
+            for (var i = 0; i < dela_list.length; i++){
+                if (meta_buffer.contents[j].FRN == dela_list[i].FRN) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found)
+            console.log('NOT FOUND'+meta_buffer.contents[j].FRN);
+        }
+/*
+        if(meta_buffer.contents.find(function(elem){
+            return elem.FRN == 47724;
+        }))
+            console.log('is in')*/
+//to here
+
+        //SECOND do the meta
+        //check for new frames
+        //var meta_to_B = check_meta_qeue();
+        check_meta_list();  //change contents of dela_list from -1 to actual
+        //push to buffer
+        //if(typeof meta_to_B != 'undefined') meta_to_B.forEach(function(element){meta_buffer.push(element);});
+        dela_list.forEach(function(element, index){
+            if(element.contents != -1 && element.inBuffer == false){
+                meta_buffer.push(element);
+                element.inBuffer = true;
+            }
+        });
+        //update buffer status and attributes
+        meta_buffer.update();
+        //use frames
+        meta_buffer.use(clock);
+
+        //check buffers status
+
+        //update time
+        //console.log(clock.timeNow + " time and size: " + meta_buffer.sizeInSec);
+        clock.tick(CLOCK_RESOLUTION);
+        append(RESULTS_FILE + '_FIXED_io_'+i_test+'.txt', '\n'+clock.duration + '\t'+ video_buffer.sizeInSec+'\t'+meta_buffer.sizeInSec);
+    }
+    console.log('done');
+    /*
+    reset clock
+    reset buffer
+    //reset qeues
+    var video_ordered_tmp = video_ordered.slice(0);
+    var dela_ordered_tmp = dela_ordered_tmp.slice(0);
+    */
+    
+}
+
 
 
 //test scenario #1 - missed frames - fixed video buffer
@@ -192,6 +291,7 @@ var test_resultsElastic = [];
 for (var i = META_BUFFER_PLAY_THRESHOLD_MIN; i < META_BUFFER_PLAY_THRESHOLD_MAX; i += 100) {
     test_resultsElastic.push(measureMissedWithElasticVideoBuffer(i));
 }
+
 
 
 write(RESULTS_FILE + '_FIXED_io.txt', 'InitialBuffer \t FramesInTime \t FramesMissed');
