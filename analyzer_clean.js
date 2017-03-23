@@ -182,7 +182,7 @@ var clock = new Clock(video_ordered[0].T);
 
 var test_buffer = [];
 for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRESHOLD_MAX; i_test += 100) {
-    //for resetting qeues
+    //for resetting queues
     var video_ordered_tmp = video_ordered.slice(0);
     var dela_ordered_tmp = dela_ordered.slice(0);
     var proj_tmp = proj.slice(0);
@@ -217,7 +217,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
     while (clock.duration < TEST_DURATION) {
         //FIRST do the video
-        var vid_to_B = check_video_qeue();        //check for new frames
+        var vid_to_B = check_video_queue();        //check for new frames
         if (typeof vid_to_B != 'undefined') vid_to_B.forEach(function (element) { video_buffer.push(element); });    //push to buffer
         video_buffer.update();  //update buffer status and attributes
         video_buffer.use(clock);    //use frames
@@ -225,7 +225,6 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
         //SECOND do the meta
         //check for new frames
-        //var meta_to_B = check_meta_qeue();
         check_meta_list();  //change contents of dela_list from -1 to actual
         //push to buffer
         //if(typeof meta_to_B != 'undefined') meta_to_B.forEach(function(element){meta_buffer.push(element);});
@@ -251,7 +250,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
     /*
     reset clock
     reset buffer
-    //reset qeues
+    //reset queues
     var video_ordered_tmp = video_ordered.slice(0);
     var dela_ordered_tmp = dela_ordered_tmp.slice(0);
     */
@@ -338,7 +337,7 @@ function generate_video_frames() {
     }
 }
 
-function check_video_qeue() {
+function check_video_queue() {
     var i_out = [];
     var out = [];
     video_ordered.forEach(function (element, index) {
