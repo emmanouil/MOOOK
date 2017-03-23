@@ -185,8 +185,8 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
     var dela_list = [];
     var dela_list_index = 0;
-    for (var i = 0; i < dela_ordered.length; i++) {
-        var elem = dela_ordered[i];
+    for (var i_a = 0; i_a < dela_ordered.length; i_a++) {
+        var elem = dela_ordered[i_a];
         var item = {};
         item.T_arrival = elem[1][1];
         item.T_display = elem[28][1];
