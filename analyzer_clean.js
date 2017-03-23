@@ -332,7 +332,7 @@ function check_delays() {
 function generate_video_frames() {
     var frn_t = 0;
     for (var i = Math.ceil(firstTimestamp); i < Math.floor(finalTimeStamp); i += 33) {
-        video_ordered.push({ TYPE: 'VID', T: i, FRN: frn_t });
+        video_ordered.push({ TYPE: 'VID', T: i, T_display: i, T_arrival: i, FRN: frn_t });
         frn_t++;
     }
     for(var i = 0; i< video_ordered; i++){
