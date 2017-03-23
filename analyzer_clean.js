@@ -335,6 +335,16 @@ function generate_video_frames() {
         video_ordered.push({ TYPE: 'VID', T: i, FRN: frn_t });
         frn_t++;
     }
+    for(var i = 0; i< video_ordered; i++){
+        var item = video_ordered[i];
+        if(i_a<video_ordered.length-1){
+            item.TnextDiff = parseInt(dela_ordered[i_a+1][28][1]-item.T_display);
+            item.FRNnext = parseInt(dela_ordered[i_a+1][4][1]);
+        }else{
+            item.TnextDiff = -1;
+            item.FRNnext = -1;
+        }
+    }
 }
 
 function check_video_queue() {
