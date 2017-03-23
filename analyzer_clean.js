@@ -194,6 +194,13 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         item.FRN = elem[4][1];
         item.contents = -1; //empty
         item.inBuffer = false;
+        if(i_a<dela_ordered.length-1){
+            item.TnextDiff = parseInt(dela_ordered[i_a+1][28][1]-item.T_display);
+            item.FRNnext = parseInt(dela_ordered[i_a+1][4][1]);
+        }else{
+            item.TnextDiff = -1;
+            item.FRNnext = -1;
+        }
         dela_list.push(item);
     }
 
