@@ -41,6 +41,10 @@ function Buffer(initSize = 0, type) {
     this.t_low = 99999999999999;
     this.t_high = 0;
     this.has_valid = false;
+    this.lastFRN = -1;
+    this.lastTdisplay = -1;
+    this.nextFRN = 0;
+    this.nextTdisplay = 0;
 
     this.push = function (element) {
         if (this.type == 'DELA') {
