@@ -17,7 +17,8 @@ const VIDEO_BUFFER_SIZE = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
 const TEST_DURATION = 40000; //in ms
-const CLOCK_RESOLUTION = 10; //in ms
+const CLOCK_RESOLUTION = 1; //in ms
+const SAMPLE_RESOLUTION = 12; //in ms (time%res)
 
 //set at check_consistency()
 var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, firstTimestamp = 0;
@@ -213,7 +214,9 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
     var v_s = 'NEW', v_m = 'NEW';
 
-    write(RESULTS_FILE + '_FIXED_io_' + i_test + '.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
+    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
+
+
 
     while (clock.duration < TEST_DURATION) {
         //FIRST do the video
@@ -244,7 +247,9 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         //update time
         //console.log(clock.timeNow + " time and size: " + meta_buffer.sizeInSec);
         clock.tick(CLOCK_RESOLUTION);
-        append(RESULTS_FILE + '_FIXED_io_' + i_test + '.txt', '\n' + clock.duration + '\t' + video_buffer.sizeInSec + '\t' + meta_buffer.sizeInSec);
+        if(clock.duration%SAMPLE_RESOLUTION!=0){
+            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', '\n' + clock.duration + '\t' + video_buffer.sizeInSec + '\t' + meta_buffer.sizeInSec);
+        }
     }
     console.log('done');
     /*
