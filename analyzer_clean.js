@@ -89,7 +89,8 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres <= META_BUFFE
 
         write(RESULTS_FILE + '_FIXED_'+DISTRIBUTION+'_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
 
-        T_zero = video_ordered[0].T;
+        T_zero = video_ordered[0].T;    //first vframe timestamp
+        T_start = 0;    //timestamp of vframe when video starts playback
         T_end = T_zero + TEST_DURATION;
         var Vbuff = [];
         var current_vframe = video_ordered[0];
@@ -113,6 +114,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres <= META_BUFFE
             Vbuff.push(video_ordered[v_i]);     //push current vframe in Vbuffer
             if (current_vbuff_status == 'NEW') {
                 if (vbuff_thres <= (Vbuff[Vbuff.length - 1].T - Vbuff[0].T)) {   //check if we are on playback levels
+                    T_start = Vbuff[Vbuff.length - 1].T;
                     Vbuff.shift();
                     current_vbuff_status = 'PLAYING';
                     console.log("VIDEO PLAYING")
@@ -167,7 +169,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres <= META_BUFFE
 
             if (current_mbuff_status == 'NEW') {
                 if (mbuff_thres <= Mbuff_size) {   //check if we are on playback levels
-                    if (Mbuff[0].T_display < current_vframe.T) {
+                    if (Mbuff[0].T_display < Vbuff[0].T) {
                         Mbuff.shift();
                         Mbuff_changed = true;
                     }
@@ -179,7 +181,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres <= META_BUFFE
                     current_mbuff_status = 'BUFFERING';
                     console.log("META BUFFERING")
                 } else {
-                    if (Mbuff[0].T_display < current_vframe.T) {
+                    if (Mbuff[0].T_display < Vbuff[0].T) {
                         Mbuff.shift();
                         Mbuff_changed = true;
                     }
