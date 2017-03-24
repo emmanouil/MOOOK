@@ -13,12 +13,13 @@ var pl_list = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8').split(/\r\n
 var coord_files = [], coord_n, sets = [];   //vars used for playlist parsing
 
 //constants
+const DISTRIBUTION = 'NORM';
 const VIDEO_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const VIDEO_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
-const VIDEO_BUFFER_PLAY_THRESHOLD_STEP = 200; //in ms
+const VIDEO_BUFFER_PLAY_THRESHOLD_STEP = 500; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
-const META_BUFFER_PLAY_THRESHOLD_STEP = 200; //in ms
+const META_BUFFER_PLAY_THRESHOLD_STEP = 500; //in ms
 const TEST_DURATION = 40000; //in ms
 
 //set at check_consistency()
@@ -52,8 +53,8 @@ generate_video_frames();
 
 
 var test_buffer = [];
-for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER_PLAY_THRESHOLD_MAX; mbuff_thres += META_BUFFER_PLAY_THRESHOLD_STEP) {
-    for (var vbuff_thres = VIDEO_BUFFER_PLAY_THRESHOLD_MIN; vbuff_thres < VIDEO_BUFFER_PLAY_THRESHOLD_MAX; vbuff_thres += VIDEO_BUFFER_PLAY_THRESHOLD_STEP) {
+for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres <= META_BUFFER_PLAY_THRESHOLD_MAX; mbuff_thres += META_BUFFER_PLAY_THRESHOLD_STEP) {
+    for (var vbuff_thres = VIDEO_BUFFER_PLAY_THRESHOLD_MIN; vbuff_thres <= VIDEO_BUFFER_PLAY_THRESHOLD_MAX; vbuff_thres += VIDEO_BUFFER_PLAY_THRESHOLD_STEP) {
         //for resetting queues
         var video_ordered_tmp = video_ordered.slice(0);
         var dela_ordered_tmp = dela_ordered.slice(0);
@@ -86,7 +87,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER
 
 
 
-        write(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
+        write(RESULTS_FILE + '_FIXED_'+DISTRIBUTION+'_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
 
         T_zero = video_ordered[0].T;
         T_end = T_zero + TEST_DURATION;
@@ -104,7 +105,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER
 
         for (var v_i = 0; v_i < video_ordered.length; v_i++) {   //iterate vframes
 
-            if (TEST_DURATION < current_vframe.T) {     //check if exceeded test duration
+            if (TEST_DURATION < (current_vframe.T -video_ordered[0].T)) {     //check if exceeded test duration
                 break;
             }
             //first do the vframes
@@ -190,7 +191,7 @@ for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER
                 }
             }
 
-            append(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length - 1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t' + Mbuff_f_size);
+            append(RESULTS_FILE + '_FIXED_'+DISTRIBUTION+'_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length - 1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t' + Mbuff_f_size);
 
         }
 
