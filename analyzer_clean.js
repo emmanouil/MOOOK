@@ -251,18 +251,19 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
             if(VIDEO_BUFFER_SIZE <= (Vbuff[Vbuff.length-1].T - Vbuff[0].T)){   //check if we are on playback levels
                 Vbuff.shift();
                 current_vbuff_status = 'PLAYING';
+                console.log("VIDEO PLAYING")
             }
         }else if(current_vbuff_status == 'PLAYING'){
             if(Vbuff.length ==0){
                 current_vbuff_status = 'BUFFERING';
-                console.log("NOT IMPLEMENTED")
+                console.log("VIDEO BUFFERING")
             }else{
                 Vbuff.shift();                  //if we are playing and frame is due, remove from buffer
             }
         }else if(current_vbuff_status == 'BUFFERING'){
             if(Vbuff.length > 0){
                 current_vbuff_status = 'PLAYING';
-                console.log("NOT IMPLEMENTED")
+                console.log("VIDEO PLAYING")
             }
         }
 
@@ -307,11 +308,12 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
                     Mbuff_changed = true;
                 }
                 current_mbuff_status = 'PLAYING';
+                console.log("META PLAYING")
             }
         } else if (current_mbuff_status == 'PLAYING') {
             if (Mbuff.length == 0) {
                 current_mbuff_status = 'BUFFERING';
-                console.log("NOT IMPLEMENTED")
+                console.log("META BUFFERING")
             } else {
                 if (Mbuff[0].T_display < current_vframe.T) {
                     Mbuff.shift();
@@ -321,7 +323,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         } else if (current_mbuff_status == 'BUFFERING') {
             if (Mbuff.length > 0) {
                 current_mbuff_status = 'PLAYING';
-                console.log("NOT IMPLEMENTED")
+                console.log("META PLAYING")
             }
         }
 
