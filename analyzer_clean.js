@@ -54,147 +54,147 @@ generate_video_frames();
 var test_buffer = [];
 for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER_PLAY_THRESHOLD_MAX; mbuff_thres += META_BUFFER_PLAY_THRESHOLD_STEP) {
     for (var vbuff_thres = VIDEO_BUFFER_PLAY_THRESHOLD_MIN; vbuff_thres < VIDEO_BUFFER_PLAY_THRESHOLD_MAX; vbuff_thres += VIDEO_BUFFER_PLAY_THRESHOLD_STEP) {
-    //for resetting queues
-    var video_ordered_tmp = video_ordered.slice(0);
-    var dela_ordered_tmp = dela_ordered.slice(0);
-    var proj_tmp = proj.slice(0);
+        //for resetting queues
+        var video_ordered_tmp = video_ordered.slice(0);
+        var dela_ordered_tmp = dela_ordered.slice(0);
+        var proj_tmp = proj.slice(0);
 
-    var dela_list = [];
-    var dela_list_index = 0;
-    for (var i_a = 0; i_a < dela_ordered.length; i_a++) {
-        var elem = dela_ordered[i_a];
-        var item = {};
-        item.T_arrival = elem[1][1];
-        item.T_display = elem[28][1];
-        item.T = item.T_display;    //TODO remove this and update it on video frames
-        item.FRN = elem[4][1];
-        item.contents = -1; //empty
-        item.inBuffer = false;
-        if(i_a<dela_ordered.length-1){
-            item.TnextDiff = parseInt(dela_ordered[i_a+1][28][1]-item.T_display);
-            item.FRNnext = parseInt(dela_ordered[i_a+1][4][1]);
-        }else{
-            item.TnextDiff = -1;
-            item.FRNnext = -1;
-        }
-        dela_list.push(item);
-    }
-
-    var dela_Tarr_ordered = dela_list.slice(0);
-    bubbleSortArrayByProperty(dela_Tarr_ordered, 'T_arrival');
-
-
-
-
-    write(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff'+vbuff_thres+'.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
-
-    T_zero = video_ordered[0].T;
-    T_end = T_zero + TEST_DURATION;
-    var Vbuff = [];
-    var current_vframe = video_ordered[0];
-    var current_vbuff_status = 'NEW';
-
-    var Mbuff = [];
-    var Mbuff_f_size = 0;
-    var Mbuff_size = 0;
-    var Mbuff_changed = false;
-    var m_index = 0;
-    var current_mframe = dela_Tarr_ordered[m_index];
-    var current_mbuff_status = 'NEW';
-
-    for(var v_i =0; v_i<video_ordered.length; v_i++){   //iterate vframes
-
-        if(TEST_DURATION<current_vframe.T){     //check if exceeded test duration
-            break;
-        }
-        //first do the vframes
-        current_vframe = video_ordered[v_i];    //select current vframe
-        Vbuff.push(video_ordered[v_i]);     //push current vframe in Vbuffer
-        if(current_vbuff_status == 'NEW'){
-            if(vbuff_thres <= (Vbuff[Vbuff.length-1].T - Vbuff[0].T)){   //check if we are on playback levels
-                Vbuff.shift();
-                current_vbuff_status = 'PLAYING';
-                console.log("VIDEO PLAYING")
+        var dela_list = [];
+        var dela_list_index = 0;
+        for (var i_a = 0; i_a < dela_ordered.length; i_a++) {
+            var elem = dela_ordered[i_a];
+            var item = {};
+            item.T_arrival = elem[1][1];
+            item.T_display = elem[28][1];
+            item.T = item.T_display;    //TODO remove this and update it on video frames
+            item.FRN = elem[4][1];
+            item.contents = -1; //empty
+            item.inBuffer = false;
+            if (i_a < dela_ordered.length - 1) {
+                item.TnextDiff = parseInt(dela_ordered[i_a + 1][28][1] - item.T_display);
+                item.FRNnext = parseInt(dela_ordered[i_a + 1][4][1]);
+            } else {
+                item.TnextDiff = -1;
+                item.FRNnext = -1;
             }
-        }else if(current_vbuff_status == 'PLAYING'){
-            if(Vbuff.length ==0){
-                current_vbuff_status = 'BUFFERING';
-                console.log("VIDEO BUFFERING")
-            }else{
-                Vbuff.shift();                  //if we are playing and frame is due, remove from buffer
-            }
-        }else if(current_vbuff_status == 'BUFFERING'){
-            if(Vbuff.length > 0){
-                current_vbuff_status = 'PLAYING';
-                console.log("VIDEO PLAYING")
-            }
+            dela_list.push(item);
         }
 
+        var dela_Tarr_ordered = dela_list.slice(0);
+        bubbleSortArrayByProperty(dela_Tarr_ordered, 'T_arrival');
 
-        //then the metaframes
-        current_mframe = dela_Tarr_ordered[m_index];    //select current mframe
-        while (current_mframe.T_arrival <= current_vframe.T) {    //push current mframe in MBuffer
-            Mbuff.push(current_mframe);
-            m_index++;
-            current_mframe = dela_Tarr_ordered[m_index];
-            Mbuff_changed = true;
-        }
 
-        if (Mbuff_changed && Mbuff.length > 0) {
-            bubbleSortArrayByProperty(Mbuff, 'FRN');
-            //calculate fragmented buffer size
-            Mbuff_f_size = (Mbuff[Mbuff.length - 1].T_display - Mbuff[0].T_display);
-            //calculate non-fragmented buffer size
-            if (Mbuff.length > 1) {
-                var d_index = 0;
-                for (var i_c = 0; i_c < dela_list.length; i_c++) {
-                    if (dela_list[i_c].FRN == Mbuff[0].FRN) {
-                        d_index = i_c;
-                        break;
+
+
+        write(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
+
+        T_zero = video_ordered[0].T;
+        T_end = T_zero + TEST_DURATION;
+        var Vbuff = [];
+        var current_vframe = video_ordered[0];
+        var current_vbuff_status = 'NEW';
+
+        var Mbuff = [];
+        var Mbuff_f_size = 0;
+        var Mbuff_size = 0;
+        var Mbuff_changed = false;
+        var m_index = 0;
+        var current_mframe = dela_Tarr_ordered[m_index];
+        var current_mbuff_status = 'NEW';
+
+        for (var v_i = 0; v_i < video_ordered.length; v_i++) {   //iterate vframes
+
+            if (TEST_DURATION < current_vframe.T) {     //check if exceeded test duration
+                break;
+            }
+            //first do the vframes
+            current_vframe = video_ordered[v_i];    //select current vframe
+            Vbuff.push(video_ordered[v_i]);     //push current vframe in Vbuffer
+            if (current_vbuff_status == 'NEW') {
+                if (vbuff_thres <= (Vbuff[Vbuff.length - 1].T - Vbuff[0].T)) {   //check if we are on playback levels
+                    Vbuff.shift();
+                    current_vbuff_status = 'PLAYING';
+                    console.log("VIDEO PLAYING")
+                }
+            } else if (current_vbuff_status == 'PLAYING') {
+                if (Vbuff.length == 0) {
+                    current_vbuff_status = 'BUFFERING';
+                    console.log("VIDEO BUFFERING")
+                } else {
+                    Vbuff.shift();                  //if we are playing and frame is due, remove from buffer
+                }
+            } else if (current_vbuff_status == 'BUFFERING') {
+                if (Vbuff.length > 0) {
+                    current_vbuff_status = 'PLAYING';
+                    console.log("VIDEO PLAYING")
+                }
+            }
+
+
+            //then the metaframes
+            current_mframe = dela_Tarr_ordered[m_index];    //select current mframe
+            while (current_mframe.T_arrival <= current_vframe.T) {    //push current mframe in MBuffer
+                Mbuff.push(current_mframe);
+                m_index++;
+                current_mframe = dela_Tarr_ordered[m_index];
+                Mbuff_changed = true;
+            }
+
+            if (Mbuff_changed && Mbuff.length > 0) {
+                bubbleSortArrayByProperty(Mbuff, 'FRN');
+                //calculate fragmented buffer size
+                Mbuff_f_size = (Mbuff[Mbuff.length - 1].T_display - Mbuff[0].T_display);
+                //calculate non-fragmented buffer size
+                if (Mbuff.length > 1) {
+                    var d_index = 0;
+                    for (var i_c = 0; i_c < dela_list.length; i_c++) {
+                        if (dela_list[i_c].FRN == Mbuff[0].FRN) {
+                            d_index = i_c;
+                            break;
+                        }
+                    }
+
+                    var b_index = 0;
+                    while ((b_index < Mbuff.length) && dela_list[d_index].FRN == Mbuff[b_index].FRN) {
+                        Mbuff_size = (Mbuff[b_index].T_display - Mbuff[0].T_display);
+                        b_index++;
+                        d_index++;
                     }
                 }
+            }
+            Mbuff_changed = false;
 
-                var b_index = 0;
-                while ((b_index < Mbuff.length) && dela_list[d_index].FRN == Mbuff[b_index].FRN) {
-                    Mbuff_size = (Mbuff[b_index].T_display - Mbuff[0].T_display);
-                    b_index++;
-                    d_index++;
+            if (current_mbuff_status == 'NEW') {
+                if (mbuff_thres <= Mbuff_size) {   //check if we are on playback levels
+                    if (Mbuff[0].T_display < current_vframe.T) {
+                        Mbuff.shift();
+                        Mbuff_changed = true;
+                    }
+                    current_mbuff_status = 'PLAYING';
+                    console.log("META PLAYING")
+                }
+            } else if (current_mbuff_status == 'PLAYING') {
+                if (Mbuff.length == 0) {
+                    current_mbuff_status = 'BUFFERING';
+                    console.log("META BUFFERING")
+                } else {
+                    if (Mbuff[0].T_display < current_vframe.T) {
+                        Mbuff.shift();
+                        Mbuff_changed = true;
+                    }
+                }
+            } else if (current_mbuff_status == 'BUFFERING') {
+                if (Mbuff.length > 0) {
+                    current_mbuff_status = 'PLAYING';
+                    console.log("META PLAYING")
                 }
             }
-        }
-        Mbuff_changed = false;
 
-        if (current_mbuff_status == 'NEW') {
-            if (mbuff_thres <= Mbuff_size) {   //check if we are on playback levels
-                if (Mbuff[0].T_display < current_vframe.T) {
-                    Mbuff.shift();
-                    Mbuff_changed = true;
-                }
-                current_mbuff_status = 'PLAYING';
-                console.log("META PLAYING")
-            }
-        } else if (current_mbuff_status == 'PLAYING') {
-            if (Mbuff.length == 0) {
-                current_mbuff_status = 'BUFFERING';
-                console.log("META BUFFERING")
-            } else {
-                if (Mbuff[0].T_display < current_vframe.T) {
-                    Mbuff.shift();
-                    Mbuff_changed = true;
-                }
-            }
-        } else if (current_mbuff_status == 'BUFFERING') {
-            if (Mbuff.length > 0) {
-                current_mbuff_status = 'PLAYING';
-                console.log("META PLAYING")
-            }
+            append(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff' + vbuff_thres + '.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length - 1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t' + Mbuff_f_size);
+
         }
 
-            append(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff'+vbuff_thres+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
-
-    }
-
-console.log('test done');
+        console.log('test done');
     }
 
 }
@@ -278,12 +278,12 @@ function generate_video_frames() {
         video_ordered.push({ TYPE: 'VID', T: i, T_display: i, T_arrival: i, FRN: frn_t });
         frn_t++;
     }
-    for(var i = 0; i< video_ordered.length; i++){
+    for (var i = 0; i < video_ordered.length; i++) {
         var item = video_ordered[i];
-        if(i<video_ordered.length-1){
-            item.TnextDiff = parseInt(video_ordered[i+1].T_display-item.T_display);
-            item.FRNnext = parseInt(video_ordered[i+1].FRN);
-        }else{
+        if (i < video_ordered.length - 1) {
+            item.TnextDiff = parseInt(video_ordered[i + 1].T_display - item.T_display);
+            item.FRNnext = parseInt(video_ordered[i + 1].FRN);
+        } else {
             item.TnextDiff = -1;
             item.FRNnext = -1;
         }
