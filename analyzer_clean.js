@@ -17,6 +17,7 @@ const VIDEO_BUFFER_SIZE = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
 const TEST_DURATION = 40000; //in ms
+const USE_CLOCK = false;
 const CLOCK_RESOLUTION = 1; //in ms
 const SAMPLE_RESOLUTION = 12; //in ms (time%res)
 
@@ -45,7 +46,7 @@ function Buffer(initSize = 0, type) {
     this.lastFRN = -1;
     this.lastTdisplay = -1;
     this.nextFRN = 0;
-    this.nextTdisplay = 0;
+    this.nextTdisplay = clock.timeNow + initSize;
 
     this.push = function (element) {
         if (this.type == 'DELA') {
@@ -122,26 +123,26 @@ function Buffer(initSize = 0, type) {
         } else if (this.status == 'STOPPED' && ((this.contents.length > 0) && this.has_valid)) {
             this.status = 'PLAYING';
             this.lastBuffStop = clock.timeNow;
-            this.sizePlay = this.lastBuffStop - this.lastBuffStart;
+            //this.sizePlay = this.lastBuffStop - this.lastBuffStart;
             console.log(this.type + ' buffer is playing ' + clock.timeNow + '   size in ms ' + this.sizeInSec);
         }
     }
 
     this.use = function (clock) {
-        var removed = true;
-        while (removed) {
-            removed = false;
-            for (var i = 0; i < this.contents.length; i++) {
-                element = this.contents[i];
-                if (clock.timeNow >= (element.T + this.sizePlay) && this.status == 'PLAYING' && element.valid) {
-                    this.contents.splice(i, 1);
-                    this.has_valid = false;
-                    removed = true;
-                    break;
+        if (this.contents.length > 0) {
+            element = this.contents[0];
+            if (clock.timeNow >= this.nextTdisplay && this.status == 'PLAYING' && element.valid) {
+                this.lastFRN = element.FRN;
+                this.nextFRN = element.FRNnext
+                this.nextTdisplay = clock.timeNow + element.TnextDiff;
+                this.contents.splice(0, 1);
+                this.has_valid = false;
+                removed = true;
+                if(this.type == 'DELA'){
+                this.update();
                 }
             }
         }
-        this.update();
     }
 
 }
@@ -181,6 +182,9 @@ check_delays();
 generate_video_frames();
 var clock = new Clock(video_ordered[0].T);
 
+
+
+
 var test_buffer = [];
 for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRESHOLD_MAX; i_test += 100) {
     //for resetting queues
@@ -208,6 +212,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         }
         dela_list.push(item);
     }
+
 
     var video_buffer = new Buffer(VIDEO_BUFFER_SIZE, 'VID');
     var meta_buffer = new Buffer(i_test, 'DELA');
@@ -340,11 +345,11 @@ function generate_video_frames() {
         video_ordered.push({ TYPE: 'VID', T: i, T_display: i, T_arrival: i, FRN: frn_t });
         frn_t++;
     }
-    for(var i = 0; i< video_ordered; i++){
+    for(var i = 0; i< video_ordered.length; i++){
         var item = video_ordered[i];
-        if(i_a<video_ordered.length-1){
-            item.TnextDiff = parseInt(dela_ordered[i_a+1][28][1]-item.T_display);
-            item.FRNnext = parseInt(dela_ordered[i_a+1][4][1]);
+        if(i<video_ordered.length-1){
+            item.TnextDiff = parseInt(video_ordered[i+1].T_display-item.T_display);
+            item.FRNnext = parseInt(video_ordered[i+1].FRN);
         }else{
             item.TnextDiff = -1;
             item.FRNnext = -1;
