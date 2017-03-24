@@ -17,9 +17,6 @@ const VIDEO_BUFFER_SIZE = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
 const TEST_DURATION = 40000; //in ms
-const USE_CLOCK = false;
-const CLOCK_RESOLUTION = 1; //in ms
-const SAMPLE_RESOLUTION = 12; //in ms (time%res)
 
 //set at check_consistency()
 var finalFrame = 0, finalTimeStamp = 0, actualFrames = 0, firstFrame = -1, firstTimestamp = 0;
@@ -28,138 +25,6 @@ var maxObservedDelay = 0, minObservedDelay = 99999;
 
 //other vars
 var proj = [], dela = [], dela_ordered = [], video_ordered = [];
-
-//Objects
-function Buffer(initSize = 0, type) {
-    this.contents = [];
-    this.contents.sorted = false;
-    this.sizeInFrames = 0;
-    this.sizeInSec = 0;
-    this.sizePlay = initSize;
-    this.status = 'NEW';    //NEW / PLAYING / STOPPED
-    this.lastBuffStart = 0;
-    this.lastBuffStop = 0;
-    this.type = type;
-    this.t_low = 99999999999999;
-    this.t_high = 0;
-    this.has_valid = false;
-    this.lastFRN = -1;
-    this.lastTdisplay = -1;
-    this.nextFRN = 0;
-    this.nextTdisplay = clock.timeNow + initSize;
-
-    this.push = function (element) {
-        if (this.type == 'DELA') {
-            element.valid = false;
-        } else if (this.type == 'VID') {
-            element.valid = true;
-            //do nothing
-        } else {
-            console.log('[ERROR] unknown buffer element');
-        }
-        this.contents.push(element);
-        this.contents.sorted = false;
-    }
-
-    this.update = function () {
-        this.validate();
-        this.updateAttrs();
-        this.hasValid();
-        this.updateStatus();
-    }
-
-
-    this.validate = function () {
-        //validate META frames
-        if (this.type == 'DELA') {
-            if (this.contents.length > 1)
-                bubbleSortArrayByProperty(this.contents, 'FRN');
-            var updating = true;
-            while (updating) {
-                updating = false;
-                this.contents.forEach(function (element) {
-                    if (dela_list[dela_list_index].FRN == element.FRN) {
-                        dela_list_index++;
-                        updating = true;
-                        element.valid = true;
-                    }
-                });
-            }
-        }
-    }
-
-    this.updateAttrs = function () {
-
-        if (this.contents.length == 0) return;
-
-        this.t_low = 99999999999999; //reset t_low in case we popped frames
-        this.contents.forEach(function (element) {
-            if (element.valid) {
-                if (element.T < this.t_low) this.t_low = element.T;
-                if (element.T > this.t_high) this.t_high = element.T;
-                this.sizeInSec = this.t_high - this.t_low;
-                this.sizeInFrames = this.contents.length;
-            }
-        }, this);
-    }
-
-    this.hasValid = function () {
-        this.contents.forEach(function (elem) {
-            if (elem.valid)
-                this.has_valid = true;
-        }, this);
-    }
-
-    this.updateStatus = function () {
-        //update buffer status
-        if (this.status == 'NEW' && this.sizeInSec >= this.sizePlay) {
-            this.status = 'PLAYING';
-            this.sizePlay = clock.timeNow - clock.timeZero;
-            console.log(this.type + ' buffer is playing  - time:' + clock.timeNow);
-        } else if (this.status == 'PLAYING' && (this.contents.length == 0 || this.contents[0].valid == false)) {
-            this.status = 'STOPPED';
-            this.lastBuffStart = clock.timeNow;
-            console.log(this.type + ' buffer is stopping  - time:' + clock.timeNow + '   size in ms ' + this.sizeInSec);
-        } else if (this.status == 'STOPPED' && ((this.contents.length > 0) && this.has_valid)) {
-            this.status = 'PLAYING';
-            this.lastBuffStop = clock.timeNow;
-            //this.sizePlay = this.lastBuffStop - this.lastBuffStart;
-            console.log(this.type + ' buffer is playing ' + clock.timeNow + '   size in ms ' + this.sizeInSec);
-        }
-    }
-
-    this.use = function (clock) {
-        if (this.contents.length > 0) {
-            element = this.contents[0];
-            if (clock.timeNow >= this.nextTdisplay && this.status == 'PLAYING' && element.valid) {
-                this.lastFRN = element.FRN;
-                this.nextFRN = element.FRNnext
-                this.nextTdisplay = clock.timeNow + element.TnextDiff;
-                this.contents.splice(0, 1);
-                this.has_valid = false;
-                removed = true;
-                if(this.type == 'DELA'){
-                this.update();
-                }
-            }
-        }
-    }
-
-}
-
-function Clock(initTime) {
-    this.timeZero = initTime;
-    this.timeNow = initTime;
-    this.duration = 0;
-    this.tick = function (delta_in) {
-        this.timeNow += delta_in;
-        this.duration = this.timeNow - this.timeZero;
-    }
-    this.reset = function () {
-        this.timeNow = this.timeZero;
-        this.duration = 0;
-    }
-}
 
 //Actual execution entry point
 
@@ -180,8 +45,6 @@ finalFrame = last_dela_frame[4][1];
 
 check_delays();
 generate_video_frames();
-var clock = new Clock(video_ordered[0].T);
-
 
 
 
@@ -216,17 +79,10 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
     var dela_Tarr_ordered = dela_list.slice(0);
     bubbleSortArrayByProperty(dela_Tarr_ordered, 'T_arrival');
 
-    var video_buffer = new Buffer(VIDEO_BUFFER_SIZE, 'VID');
-    var meta_buffer = new Buffer(i_test, 'DELA');
-
-    var v_s = 'NEW', v_m = 'NEW';
 
 
 
-
-
-
-    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec \t MetaFramesFragInSec');
+    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+'.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
 
     T_zero = video_ordered[0].T;
     T_end = T_zero + TEST_DURATION;
@@ -327,7 +183,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
             }
         }
 
-            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
+            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
 
     }
 
@@ -426,29 +282,6 @@ function generate_video_frames() {
         }
     }
 }
-
-function check_video_queue() {
-    var i_out = [];
-    var out = [];
-    video_ordered.forEach(function (element, index) {
-        if (element.T <= clock.timeNow) i_out.push(index);
-    });
-    i_out.forEach(function (element) {
-        out.push(video_ordered.splice(element, 1)[0]);
-    })
-    return out;
-}
-
-function check_meta_list() {
-    dela_list.forEach(function (element, index) {
-        if (dela_list[index].contents == -1) {
-            if (element.T_arrival <= clock.timeNow) {
-                dela_list[index].contents = findDelayedByFrameNo(element.FRN);
-            }
-        }
-    });
-}
-
 
 /*----------- HELPER -----------*/
 /**
