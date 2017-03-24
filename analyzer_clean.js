@@ -222,7 +222,9 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
     var v_s = 'NEW', v_m = 'NEW';
 
 
-if(!USE_CLOCK){
+
+
+
 
     write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec \t MetaFramesFragInSec');
 
@@ -327,57 +329,12 @@ if(!USE_CLOCK){
 
     }
 
-console.log('done');
+console.log('test done');
 
-}else{
-
-write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
-
-    while (clock.duration < TEST_DURATION) {
-        //FIRST do the video
-        var vid_to_B = check_video_queue();        //check for new frames
-        if (typeof vid_to_B != 'undefined') vid_to_B.forEach(function (element) { video_buffer.push(element); });    //push to buffer
-        video_buffer.update();  //update buffer status and attributes
-        video_buffer.use(clock);    //use frames
-
-
-        //SECOND do the meta
-        //check for new frames
-        check_meta_list();  //change contents of dela_list from -1 to actual
-        //push to buffer
-        //if(typeof meta_to_B != 'undefined') meta_to_B.forEach(function(element){meta_buffer.push(element);});
-        dela_list.forEach(function (element, index) {
-            if (element.contents != -1 && element.inBuffer == false) {
-                meta_buffer.push(element);
-                element.inBuffer = true;
-            }
-        });
-        //update buffer status and attributes
-        meta_buffer.update();
-        //use frames
-        meta_buffer.use(clock);
-
-        //check buffers status
-
-        //update time
-        //console.log(clock.timeNow + " time and size: " + meta_buffer.sizeInSec);
-        clock.tick(CLOCK_RESOLUTION);
-        if(clock.duration%SAMPLE_RESOLUTION!=0){
-            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', '\n' + clock.duration + '\t' + video_buffer.sizeInSec + '\t' + meta_buffer.sizeInSec);
-        }
-    }
-    console.log('done');
-    /*
-    reset clock
-    reset buffer
-    //reset queues
-    var video_ordered_tmp = video_ordered.slice(0);
-    var dela_ordered_tmp = dela_ordered_tmp.slice(0);
-    */
-}
 
 }
 
+console.log('ALL tests done');
 
 
 
