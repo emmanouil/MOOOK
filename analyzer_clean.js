@@ -213,15 +213,125 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         dela_list.push(item);
     }
 
+    var dela_Tarr_ordered = dela_list.slice(0);
+    bubbleSortArrayByProperty(dela_Tarr_ordered, 'T_arrival');
 
     var video_buffer = new Buffer(VIDEO_BUFFER_SIZE, 'VID');
     var meta_buffer = new Buffer(i_test, 'DELA');
 
     var v_s = 'NEW', v_m = 'NEW';
 
-    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
+
+if(!USE_CLOCK){
+
+    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec \t MetaFramesFragInSec');
+
+    T_zero = video_ordered[0].T;
+    T_end = T_zero + TEST_DURATION;
+    var Vbuff = [];
+    var current_vframe = video_ordered[0];
+    var current_vbuff_status = 'NEW';
+
+    var Mbuff = [];
+    var Mbuff_f_size = 0;
+    var Mbuff_size = 0;
+    var Mbuff_changed = false;
+    var m_index = 0;
+    var current_mframe = dela_Tarr_ordered[m_index];
+    var current_mbuff_status = 'NEW';
+
+    for(var v_i =0; v_i<video_ordered.length; v_i++){   //iterate vframes
+
+        //first do the vframes
+        current_vframe = video_ordered[v_i];    //select current vframe
+        Vbuff.push(video_ordered[v_i]);     //push current vframe in Vbuffer
+        if(current_vbuff_status == 'NEW'){
+            if(VIDEO_BUFFER_SIZE <= (Vbuff[Vbuff.length-1].T - Vbuff[0].T)){   //check if we are on playback levels
+                Vbuff.shift();
+                current_vbuff_status = 'PLAYING';
+            }
+        }else if(current_vbuff_status == 'PLAYING'){
+            if(Vbuff.length ==0){
+                current_vbuff_status = 'BUFFERING';
+                console.log("NOT IMPLEMENTED")
+            }else{
+                Vbuff.shift();                  //if we are playing and frame is due, remove from buffer
+            }
+        }else if(current_vbuff_status == 'BUFFERING'){
+            if(Vbuff.length > 0){
+                current_vbuff_status = 'PLAYING';
+                console.log("NOT IMPLEMENTED")
+            }
+        }
 
 
+        //then the metaframes
+        current_mframe = dela_Tarr_ordered[m_index];    //select current mframe
+        while (current_mframe.T_arrival <= current_vframe.T) {    //push current mframe in MBuffer
+            Mbuff.push(current_mframe);
+            m_index++;
+            current_mframe = dela_Tarr_ordered[m_index];
+            Mbuff_changed = true;
+        }
+
+        if (Mbuff_changed && Mbuff.length > 0) {
+            bubbleSortArrayByProperty(Mbuff, 'FRN');
+            //calculate fragmented buffer size
+            Mbuff_f_size = (Mbuff[Mbuff.length - 1].T_display - Mbuff[0].T_display);
+            //calculate non-fragmented buffer size
+            if (Mbuff.length > 1) {
+                var d_index = 0;
+                for (var i_c = 0; i_c < dela_list.length; i_c++) {
+                    if (dela_list[i_c].FRN == Mbuff[0].FRN) {
+                        d_index = i_c;
+                        break;
+                    }
+                }
+
+                var b_index = 0;
+                while ((b_index < Mbuff.length) && dela_list[d_index].FRN == Mbuff[b_index].FRN) {
+                    Mbuff_size = (Mbuff[b_index].T_display - Mbuff[0].T_display);
+                    b_index++;
+                    d_index++;
+                }
+            }
+        }
+        Mbuff_changed = false;
+
+        if (current_mbuff_status == 'NEW') {
+            if (i_test <= Mbuff_size) {   //check if we are on playback levels
+                if (Mbuff[0].T_display < current_vframe.T) {
+                    Mbuff.shift();
+                    Mbuff_changed = true;
+                }
+                current_mbuff_status = 'PLAYING';
+            }
+        } else if (current_mbuff_status == 'PLAYING') {
+            if (Mbuff.length == 0) {
+                current_mbuff_status = 'BUFFERING';
+                console.log("NOT IMPLEMENTED")
+            } else {
+                if (Mbuff[0].T_display < current_vframe.T) {
+                    Mbuff.shift();
+                    Mbuff_changed = true;
+                }
+            }
+        } else if (current_mbuff_status == 'BUFFERING') {
+            if (Mbuff.length > 0) {
+                current_mbuff_status = 'PLAYING';
+                console.log("NOT IMPLEMENTED")
+            }
+        }
+
+            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
+
+    }
+
+console.log('done');
+
+}else{
+
+write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+CLOCK_RESOLUTION+'.txt', 'Time \t VidFramesInSec \t MetaFramesInSec');
 
     while (clock.duration < TEST_DURATION) {
         //FIRST do the video
@@ -264,6 +374,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
     var video_ordered_tmp = video_ordered.slice(0);
     var dela_ordered_tmp = dela_ordered_tmp.slice(0);
     */
+}
 
 }
 
