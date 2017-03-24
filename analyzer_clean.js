@@ -13,9 +13,12 @@ var pl_list = fs.readFileSync('x64/Debug/out/playlist.m3u8', 'utf8').split(/\r\n
 var coord_files = [], coord_n, sets = [];   //vars used for playlist parsing
 
 //constants
-const VIDEO_BUFFER_SIZE = 1000; //in ms
+const VIDEO_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
+const VIDEO_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
+const VIDEO_BUFFER_PLAY_THRESHOLD_STEP = 200; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MIN = 1000; //in ms
 const META_BUFFER_PLAY_THRESHOLD_MAX = 4000; //in ms
+const META_BUFFER_PLAY_THRESHOLD_STEP = 200; //in ms
 const TEST_DURATION = 40000; //in ms
 
 //set at check_consistency()
@@ -49,7 +52,8 @@ generate_video_frames();
 
 
 var test_buffer = [];
-for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRESHOLD_MAX; i_test += 100) {
+for (var mbuff_thres = META_BUFFER_PLAY_THRESHOLD_MIN; mbuff_thres < META_BUFFER_PLAY_THRESHOLD_MAX; mbuff_thres += META_BUFFER_PLAY_THRESHOLD_STEP) {
+    for (var vbuff_thres = VIDEO_BUFFER_PLAY_THRESHOLD_MIN; vbuff_thres < VIDEO_BUFFER_PLAY_THRESHOLD_MAX; vbuff_thres += VIDEO_BUFFER_PLAY_THRESHOLD_STEP) {
     //for resetting queues
     var video_ordered_tmp = video_ordered.slice(0);
     var dela_ordered_tmp = dela_ordered.slice(0);
@@ -82,7 +86,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
 
 
-    write(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+'.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
+    write(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff'+vbuff_thres+'.txt', 'Time \t vbuffer \t mbuffer (c) \t mbuffer (f)');
 
     T_zero = video_ordered[0].T;
     T_end = T_zero + TEST_DURATION;
@@ -100,11 +104,14 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
 
     for(var v_i =0; v_i<video_ordered.length; v_i++){   //iterate vframes
 
+        if(TEST_DURATION<current_vframe.T){     //check if exceeded test duration
+            break;
+        }
         //first do the vframes
         current_vframe = video_ordered[v_i];    //select current vframe
         Vbuff.push(video_ordered[v_i]);     //push current vframe in Vbuffer
         if(current_vbuff_status == 'NEW'){
-            if(VIDEO_BUFFER_SIZE <= (Vbuff[Vbuff.length-1].T - Vbuff[0].T)){   //check if we are on playback levels
+            if(vbuff_thres <= (Vbuff[Vbuff.length-1].T - Vbuff[0].T)){   //check if we are on playback levels
                 Vbuff.shift();
                 current_vbuff_status = 'PLAYING';
                 console.log("VIDEO PLAYING")
@@ -158,7 +165,7 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
         Mbuff_changed = false;
 
         if (current_mbuff_status == 'NEW') {
-            if (i_test <= Mbuff_size) {   //check if we are on playback levels
+            if (mbuff_thres <= Mbuff_size) {   //check if we are on playback levels
                 if (Mbuff[0].T_display < current_vframe.T) {
                     Mbuff.shift();
                     Mbuff_changed = true;
@@ -183,12 +190,12 @@ for (var i_test = META_BUFFER_PLAY_THRESHOLD_MIN; i_test < META_BUFFER_PLAY_THRE
             }
         }
 
-            append(RESULTS_FILE + '_FIXED_io_' + i_test + '_'+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
+            append(RESULTS_FILE + '_FIXED_io_Mbuff_' + mbuff_thres + '_Vbuff'+vbuff_thres+'.txt', '\n' + (current_vframe.T - T_zero) + '\t' + (Vbuff[Vbuff.length-1].T - Vbuff[0].T) + '\t' + Mbuff_size + '\t'+ Mbuff_f_size);
 
     }
 
 console.log('test done');
-
+    }
 
 }
 
